@@ -5,7 +5,7 @@ end
 
 
 -- local later
-storyline = CreateFrame("Frame",nil); -- Event Frame
+local storyline = CreateFrame("Frame",nil); -- Event Frame
 	storyline.Background = CreateFrame("Frame","StorylineFrame",UIParent) -- Background Frame
 	storyline.Player = CreateFrame("Frame",nil,storyline.Background) -- Player Frame
 	storyline.NPC = CreateFrame("Frame",nil,storyline.Background) -- NPC Frame
@@ -1619,11 +1619,24 @@ end
 function storyline:GetObjectiveText()
 	local QuestID = 0
 	local QuestTitel = GetTitleText()
+	local QuestLogTitel = ""
+	local QuestLogTitelLevel
 	local numEntries = GetNumQuestLogEntries()
 	local ObjectiveText
-	for i=1, numEntries do
-		if GetQuestLogTitle(i) == QuestTitel then
-			QuestID = i
+
+	-- check if EQL3 (Extended Quest Log Addon) is active - EQL3 adds a [lvl] into text
+	if EQL3_QuestLogFrame then
+		for i=1, numEntries do
+			QuestLogTitel,QuestLogTitelLevel = GetQuestLogTitle(i)
+			if "["..QuestLogTitelLevel.."] "..QuestLogTitel == QuestTitel then
+				QuestID = i
+			end
+		end
+	else
+		for i=1, numEntries do
+			if GetQuestLogTitle(i) == QuestTitel then
+				QuestID = i
+			end
 		end
 	end
 
@@ -1783,8 +1796,9 @@ function storyline:UpdateRewardItems()
 		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button:SetScript("OnLeave",function() GameTooltip:Hide(); ResetCursor() end)
 		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button:SetScript("OnClick",function() end)
 		storyline.QuestComplete.Mainframe.Reward.Block[IDnum]:Show()
-
   end
+	-- hide if no rewards
+	if totalRewards == 0 then storyline.QuestComplete.Mainframe:Hide() end
 end
 
 -- Update 3D Models
@@ -1872,6 +1886,3 @@ function storyline:QuestReward_OnClick()
 		QuestFrameRewardPanel.itemChoice = this:GetID();
 	end
 end
-
--- DressUpFrame:ClearAllPoints()
--- DressUpFrame:SetPoint("TOPLEFT",storyline.Background,"TOPRIGHT")
