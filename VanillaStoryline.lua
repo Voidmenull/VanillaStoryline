@@ -5,7 +5,7 @@ end
 
 
 -- local later
-local storyline = CreateFrame("Frame",nil); -- Event Frame
+storyline = CreateFrame("Frame",nil); -- Event Frame
 	storyline.Background = CreateFrame("Frame","StorylineFrame",UIParent) -- Background Frame
 	storyline.Player = CreateFrame("Frame",nil,storyline.Background) -- Player Frame
 	storyline.NPC = CreateFrame("Frame",nil,storyline.Background) -- NPC Frame
@@ -80,6 +80,7 @@ function storyline:OnEvent()
 	elseif event == "QUEST_GREETING" then
 		print("QUEST_GREETING")
 	elseif event == "QUEST_FINISHED" then
+		DeclineQuest()
 		storyline.Background:Hide()
 	elseif event == "QUEST_ITEM_UPDATE" then
 		print("QUEST_ITEM_UPDATE")
@@ -509,9 +510,9 @@ function storyline.QuestProgress:ConfigureFrame()
 
 	-- Objective Frame
 	self.Mainframe.Objective = CreateFrame("Frame",nil,self.Mainframe)
-		local backdrop = {bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile="Interface\\GLUES\\COMMON\\TextPanel-Border", tile=true,tileSize = 16, edgeSize = 36, insets = { left = 6, right = 6, top = 6, bottom = 6 }}  -- path to the background texture
+		local backdrop = {bgFile = "Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\UI-GuildAchievement-Parchment-Horizontal", edgeFile="Interface\\GLUES\\COMMON\\TextPanel-Border", tile=false,tileSize = 16, edgeSize = 36, insets = { left = 6, right = 6, top = 6, bottom = 6 }}  -- path to the background texture
 		self.Mainframe.Objective:SetBackdrop(backdrop)
-		self.Mainframe.Objective:SetBackdropColor(1,1,1,1)
+		self.Mainframe.Objective:SetBackdropColor(1,1,1,0.5)
 		self.Mainframe.Objective:SetBackdropBorderColor(1,1,0,1)
 		self.Mainframe.Objective:SetWidth(350)
 		self.Mainframe.Objective:SetHeight(150)
@@ -526,6 +527,7 @@ function storyline.QuestProgress:ConfigureFrame()
 		self.Mainframe.Objective.Headline:SetJustifyV("TOP")
 		self.Mainframe.Objective.Headline:SetText("Quest Objectives")
 		self.Mainframe.Objective.Headline:SetTextColor(1,0.75,0)
+		self.Mainframe.Objective.Headline:SetShadowOffset(1, -1)
 
 	self.Mainframe.Objective.ReqItemsText = self.Mainframe.Objective:CreateFontString(nil, "OVERLAY")
 		self.Mainframe.Objective.ReqItemsText:SetPoint("TOP", 0, -30)
@@ -536,6 +538,7 @@ function storyline.QuestProgress:ConfigureFrame()
 		self.Mainframe.Objective.ReqItemsText:SetJustifyV("TOP")
 		self.Mainframe.Objective.ReqItemsText:SetText("Required:")
 		self.Mainframe.Objective.ReqItemsText:SetTextColor(1,0.75,0)
+		self.Mainframe.Objective.ReqItemsText:SetShadowOffset(1, -1)
 
 	-- Req. Items Blocks
 	self.Mainframe.Objective.Block = {}
@@ -797,6 +800,7 @@ function storyline.QuestProgress:ConfigureFrame()
 		self.Mainframe.Objective.Font[1]:SetJustifyV("TOP")
 		self.Mainframe.Objective.Font[1]:SetText("TEST")
 		self.Mainframe.Objective.Font[1]:SetTextColor(0.95,0.95,0.95)
+		self.Mainframe.Objective.Font[1]:SetShadowOffset(1, -1)
 
 	self.Mainframe.Objective.Font[2] = self.Mainframe.Objective:CreateFontString(nil, "OVERLAY")
 		self.Mainframe.Objective.Font[2]:SetPoint("TOP", 0, -65)
@@ -807,6 +811,7 @@ function storyline.QuestProgress:ConfigureFrame()
 		self.Mainframe.Objective.Font[2]:SetJustifyV("TOP")
 		self.Mainframe.Objective.Font[2]:SetText("TEST")
 		self.Mainframe.Objective.Font[2]:SetTextColor(0.95,0.95,0.95)
+		self.Mainframe.Objective.Font[2]:SetShadowOffset(1, -1)
 
 	self.Mainframe.Objective.Font[3] = self.Mainframe.Objective:CreateFontString(nil, "OVERLAY")
 		self.Mainframe.Objective.Font[3]:SetPoint("TOP", 0, -80)
@@ -817,6 +822,7 @@ function storyline.QuestProgress:ConfigureFrame()
 		self.Mainframe.Objective.Font[3]:SetJustifyV("TOP")
 		self.Mainframe.Objective.Font[3]:SetText("TEST")
 		self.Mainframe.Objective.Font[3]:SetTextColor(0.95,0.95,0.95)
+		self.Mainframe.Objective.Font[3]:SetShadowOffset(1, -1)
 
 	self.Mainframe.Objective.Font[4] = self.Mainframe.Objective:CreateFontString(nil, "OVERLAY")
 		self.Mainframe.Objective.Font[4]:SetPoint("TOP", 0, -95)
@@ -827,6 +833,7 @@ function storyline.QuestProgress:ConfigureFrame()
 		self.Mainframe.Objective.Font[4]:SetJustifyV("TOP")
 		self.Mainframe.Objective.Font[4]:SetText("TEST")
 		self.Mainframe.Objective.Font[4]:SetTextColor(0.95,0.95,0.95)
+		self.Mainframe.Objective.Font[4]:SetShadowOffset(1, -1)
 
 	self.Mainframe.Objective.Font[5] = self.Mainframe.Objective:CreateFontString(nil, "OVERLAY")
 		self.Mainframe.Objective.Font[5]:SetPoint("TOP", 0, -110)
@@ -837,6 +844,7 @@ function storyline.QuestProgress:ConfigureFrame()
 		self.Mainframe.Objective.Font[5]:SetJustifyV("TOP")
 		self.Mainframe.Objective.Font[5]:SetText("TEST")
 		self.Mainframe.Objective.Font[5]:SetTextColor(0.95,0.95,0.95)
+		self.Mainframe.Objective.Font[5]:SetShadowOffset(1, -1)
 
 	self.Mainframe.Objective.Font[6] = self.Mainframe.Objective:CreateFontString(nil, "OVERLAY")
 		self.Mainframe.Objective.Font[6]:SetPoint("TOP", 0, -125)
@@ -847,7 +855,7 @@ function storyline.QuestProgress:ConfigureFrame()
 		self.Mainframe.Objective.Font[6]:SetJustifyV("TOP")
 		self.Mainframe.Objective.Font[6]:SetText("TEST")
 		self.Mainframe.Objective.Font[6]:SetTextColor(0.95,0.95,0.95)
-
+  	self.Mainframe.Objective.Font[6]:SetShadowOffset(1, -1)
 
 end
 
@@ -896,9 +904,9 @@ function storyline.QuestComplete:ConfigureFrame()
 
 	-- Reward Frame
 	self.Mainframe.Reward = CreateFrame("Frame",nil,self.Mainframe)
-		local backdrop = {bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile="Interface\\GLUES\\COMMON\\TextPanel-Border", tile=true,tileSize = 16, edgeSize = 36, insets = { left = 6, right = 6, top = 6, bottom = 6 }}
+		local backdrop = {bgFile = "Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\UI-GuildAchievement-Parchment-Horizontal", edgeFile="Interface\\GLUES\\COMMON\\TextPanel-Border", tile=false,tileSize = 16, edgeSize = 36, insets = { left = 6, right = 6, top = 6, bottom = 6 }}
 		self.Mainframe.Reward:SetBackdrop(backdrop)
-		self.Mainframe.Reward:SetBackdropColor(1,1,1,1)
+		self.Mainframe.Reward:SetBackdropColor(1,1,1,0.5)
 		self.Mainframe.Reward:SetBackdropBorderColor(1,1,0,1)
 		self.Mainframe.Reward:SetWidth(350)
 		self.Mainframe.Reward:SetHeight(150)
@@ -913,6 +921,7 @@ function storyline.QuestComplete:ConfigureFrame()
 		self.Mainframe.Reward.Headline:SetJustifyV("TOP")
 		self.Mainframe.Reward.Headline:SetText("Rewards")
 		self.Mainframe.Reward.Headline:SetTextColor(1,0.75,0)
+		self.Mainframe.Reward.Headline:SetShadowOffset(1, -1)
 
 	self.Mainframe.Reward.ReceiveText = self.Mainframe.Reward:CreateFontString(nil, "OVERLAY")
 		self.Mainframe.Reward.ReceiveText:SetPoint("TOP", 0, -30)
@@ -923,6 +932,46 @@ function storyline.QuestComplete:ConfigureFrame()
 		self.Mainframe.Reward.ReceiveText:SetJustifyV("TOP")
 		self.Mainframe.Reward.ReceiveText:SetText("You will Receive:")
 		self.Mainframe.Reward.ReceiveText:SetTextColor(1,1,1)
+		self.Mainframe.Reward.ReceiveText:SetShadowOffset(1, -1)
+
+-- gold reward frame, the shitty blizzard frametemplate doesnt work!
+	self.Mainframe.Reward.Money = CreateFrame("Frame",nil,self.Mainframe.Reward)
+		self.Mainframe.Reward.Money:SetPoint("TOPLEFT",170,-23)
+		self.Mainframe.Reward.Money:SetWidth(100)
+		self.Mainframe.Reward.Money:SetHeight(28)
+			self.Mainframe.Reward.Money.Copper = CreateFrame("Frame",nil,self.Mainframe.Reward.Money)
+			self.Mainframe.Reward.Money.Copper:SetPoint("RIGHT",0,0)
+			self.Mainframe.Reward.Money.Copper:SetWidth(19)
+			self.Mainframe.Reward.Money.Copper:SetHeight(19)
+			local Copper = self.Mainframe.Reward.Money.Copper:CreateTexture()
+			Copper:SetAllPoints()
+			Copper:SetTexture("Interface\\MoneyFrame\\UI-MoneyIcons")
+			Copper:SetTexCoord(0.5,0.75,0,1)
+			self.Mainframe.Reward.Money.Copper.Font = self.Mainframe.Reward.Money.Copper:CreateFontString(nil, "OVERLAY","NumberFontNormalLarge")
+			self.Mainframe.Reward.Money.Copper.Font:SetPoint("RIGHT",-19,0)
+			self.Mainframe.Reward.Money.Copper.Font:SetText("??")
+			self.Mainframe.Reward.Money.Silver = CreateFrame("Frame",nil,self.Mainframe.Reward.Money)
+			self.Mainframe.Reward.Money.Silver:SetPoint("CENTER",0,0)
+			self.Mainframe.Reward.Money.Silver:SetWidth(19)
+			self.Mainframe.Reward.Money.Silver:SetHeight(19)
+			local Silver = self.Mainframe.Reward.Money.Silver:CreateTexture()
+			Silver:SetAllPoints()
+			Silver:SetTexture("Interface\\MoneyFrame\\UI-MoneyIcons")
+			Silver:SetTexCoord(0.25,0.5,0,1)
+			self.Mainframe.Reward.Money.Silver.Font = self.Mainframe.Reward.Money.Silver:CreateFontString(nil, "OVERLAY","NumberFontNormalLarge")
+			self.Mainframe.Reward.Money.Silver.Font:SetPoint("CENTER",-19,0)
+			self.Mainframe.Reward.Money.Silver.Font:SetText("??")
+			self.Mainframe.Reward.Money.Gold = CreateFrame("Frame",nil,self.Mainframe.Reward.Money)
+			self.Mainframe.Reward.Money.Gold:SetPoint("LEFT",0,0)
+			self.Mainframe.Reward.Money.Gold:SetWidth(19)
+			self.Mainframe.Reward.Money.Gold:SetHeight(19)
+			local Gold = self.Mainframe.Reward.Money.Gold:CreateTexture()
+			Gold:SetAllPoints()
+			Gold:SetTexture("Interface\\MoneyFrame\\UI-MoneyIcons")
+			Gold:SetTexCoord(0.,0.25,0,1)
+			self.Mainframe.Reward.Money.Gold.Font = self.Mainframe.Reward.Money.Gold:CreateFontString(nil, "OVERLAY","NumberFontNormalLarge")
+			self.Mainframe.Reward.Money.Gold.Font:SetPoint("LEFT",-19,0)
+			self.Mainframe.Reward.Money.Gold.Font:SetText("??")
 
 	-- Reward Items Blocks
 	self.Mainframe.Reward.Block = {}
@@ -1377,6 +1426,7 @@ function storyline.Text:ConfigureFrame()
 		self.NPCName:SetJustifyV("TOP")
 		self.NPCName:SetText("NPC Name")
 		self.NPCName:SetTextColor(1,0.75,0)
+		self.NPCName:SetShadowOffset(1, -1)
 
 	-- Questtext Font
 	self.Questtext = {}
@@ -1462,6 +1512,9 @@ function storyline:ProgressQuest()
 	-- hide and show
 	storyline:HideAll()
 	UIFrameFadeIn(storyline.QuestProgress.Mainframe,0.5)
+
+	-- point to Quest
+	storyline:GetObjectiveText()
 	storyline:UpdateReqItems()
 
 	-- close clicking
@@ -1642,7 +1695,6 @@ function storyline:UpdateRewardItems()
 	-- hide all frames
 	for i=1,6 do storyline.QuestComplete.Mainframe.Reward.Block[i]:Hide() end
 
-
 	local numQuestChoices = GetNumQuestChoices()
 	local numQuestRewards = GetNumQuestRewards()
 	local numQuestSpellRewards = 0
@@ -1652,7 +1704,21 @@ function storyline:UpdateRewardItems()
 	local counter = 0
 
 	-- display gold
-	storyline.QuestComplete.Mainframe.Reward.ReceiveText:SetText("You will Receive:")
+	local gold = floor(money/10000)
+	local silver = floor((money-(gold*10000))/100)
+	local copper = (money-(gold*10000)-(silver*100))
+
+	if gold == 0 then storyline.QuestComplete.Mainframe.Reward.Money.Gold:Hide() else storyline.QuestComplete.Mainframe.Reward.Money.Gold:Show() end
+	if gold == 0 and silver == 0 then storyline.QuestComplete.Mainframe.Reward.Money.Silver:Hide() else storyline.QuestComplete.Mainframe.Reward.Money.Silver:Show() end
+
+
+	if money > 0 then
+		storyline.QuestComplete.Mainframe.Reward.Money:Show()
+		storyline.QuestComplete.Mainframe.Reward.Money.Gold.Font:SetText(gold)
+		storyline.QuestComplete.Mainframe.Reward.Money.Silver.Font:SetText(silver)
+		storyline.QuestComplete.Mainframe.Reward.Money.Copper.Font:SetText(copper)
+	else storyline.QuestComplete.Mainframe.Reward.Money:Hide()
+	end
 
   for i=1,numQuestChoices do
 		local IDnum = i
@@ -1746,7 +1812,7 @@ function storyline:ShowNPCText(Text,Offset)
 
 	storyline.Variables.QuesttextLength = string.len(Text)
 	storyline.Text.Questtext.Font:SetText(Text)
-	storyline.Background.layer5.Questtext.Slider:SetMinMaxValues(0, storyline.Variables.QuesttextLength/10)
+	storyline.Background.layer5.Questtext.Slider:SetMinMaxValues(0, storyline.Variables.QuesttextLength/5)
 
 	if QUEST_FADING_DISABLE == "1" then
 		storyline.Options.Fading = 0
