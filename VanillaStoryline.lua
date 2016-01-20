@@ -10,6 +10,7 @@ local storyline = CreateFrame("Frame",nil); -- Event Frame
 	storyline.Player = CreateFrame("Frame",nil,storyline.Background) -- Player Frame
 	storyline.NPC = CreateFrame("Frame",nil,storyline.Background) -- NPC Frame
 	storyline.Text = CreateFrame("Frame",nil,storyline.Background) -- Text Frame
+	storyline.Gossip = CreateFrame("Frame",nil,storyline.Background) -- Gossip Frame
 	storyline.QuestDetail = CreateFrame("Frame",nil,storyline.Background) -- QuestDetail Frame
 	storyline.QuestProgress = CreateFrame("Frame",nil,storyline.Background) -- QuestDetail Frame
 	storyline.QuestComplete = CreateFrame("Frame",nil,storyline.Background) -- QuestComplete Frame
@@ -22,9 +23,11 @@ storyline:RegisterEvent("ADDON_LOADED")
 storyline:RegisterEvent("QUEST_DETAIL")
 storyline:RegisterEvent("QUEST_PROGRESS")
 storyline:RegisterEvent("QUEST_COMPLETE")
-storyline:RegisterEvent("QUEST_GREETING")
+--storyline:RegisterEvent("QUEST_GREETING")
 storyline:RegisterEvent("QUEST_FINISHED")
 storyline:RegisterEvent("QUEST_ITEM_UPDATE")
+storyline:RegisterEvent("GOSSIP_SHOW")
+storyline:RegisterEvent("GOSSIP_CLOSED")
 
 tinsert(UISpecialFrames, "StorylineFrame")
 
@@ -58,16 +61,18 @@ function storyline:OnEvent()
 		storyline.Options.TextSpeed = StorylineOptions.TextSpeed
 		storyline.Options.HideBlizzardFrames = StorylineOptions.HideBlizzardFrames
 
-
+		-- Greate UI
 		storyline.Background:ConfigureFrame() -- configure Background Frame
 		storyline.Player:ConfigureFrame() -- configure player 3d Frame
 		storyline.NPC:ConfigureFrame() -- configure the NPC 3d frame
 		storyline.Text:ConfigureFrame() -- configure fonts
+		storyline.Gossip:ConfigureFrame() -- configure Gossip Frame
 		storyline.QuestDetail:ConfigureFrame() -- configure Quest Detail Frame
 		storyline.QuestProgress:ConfigureFrame() -- configure Quest Progress Frame
 		storyline.QuestComplete:ConfigureFrame() -- configure Quest complete frame
     storyline.OptionsFrame:ConfigureFrame() -- configure Options Frame
 		storyline.Background:Hide()
+
 	elseif event == "QUEST_DETAIL" then
 		storyline:HideBlizzard()
 		storyline:AcceptQuest()
@@ -84,6 +89,11 @@ function storyline:OnEvent()
 		storyline.Background:Hide()
 	elseif event == "QUEST_ITEM_UPDATE" then
 		print("QUEST_ITEM_UPDATE")
+	elseif event == "GOSSIP_SHOW" then
+		storyline:HideBlizzard()
+		storyline:GossipStart()
+	elseif event == "GOSSIP_CLOSED" then
+		storyline.Background:Hide()
 	end
 
 end
@@ -96,7 +106,7 @@ function storyline:OnUpdate()
 
 		-- Set Font Fading Progress
 		storyline.Variables.fadingProgress = storyline.Variables.fadingProgress + storyline.Options.TextSpeed
-		storyline.Variables.SliderProgress = storyline.Variables.SliderProgress + (storyline.Options.TextSpeed/3)
+		storyline.Variables.SliderProgress = storyline.Variables.SliderProgress + (storyline.Options.TextSpeed/4)
 
 		-- set Slider Progression
 		storyline.Background.layer5.Questtext.Slider:SetValue(storyline.Variables.SliderProgress-50)
@@ -153,7 +163,7 @@ end
 -- Configure Background Frame
 function storyline.Background:ConfigureFrame()
 	-- Layer 1
-	self:SetFrameStrata("MEDIUM")
+	self:SetFrameStrata("HIGH")
 	self:SetWidth(700)
 	self:SetHeight(450)
 	self:SetPoint("CENTER",0,0)
@@ -370,7 +380,7 @@ function storyline.Background:ConfigureFrame()
 		self.CloseButton:SetPushedTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Down")
 		self.CloseButton:SetHighlightTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight")
 		self.CloseButton:SetScript("OnClick",function() PlaySound("igMainMenuOptionCheckBoxOn")
-																						DeclineQuest(); storyline:HideAll()
+																						DeclineQuest(); storyline:HideAll(); storyline.Background:Hide()
 																					end)
 
 	-- Options button
@@ -387,6 +397,188 @@ function storyline.Background:ConfigureFrame()
 																					end)
 
 end
+
+function storyline.Gossip:ConfigureFrame()
+	-- GetQuest Buttons
+	self.Frame = CreateFrame("Frame",nil,storyline.Background.layer5)
+		self.Frame:SetWidth(300)
+		self.Frame:SetHeight(200)
+		self.Frame:SetPoint("CENTER",0,50)
+		local backdrop = {bgFile = "Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\UI-GuildAchievement-Parchment-Horizontal", edgeFile="Interface\\GLUES\\COMMON\\TextPanel-Border", tile=false,tileSize = 16, edgeSize = 36, insets = { left = 6, right = 6, top = 6, bottom = 6 }}  -- path to the background texture
+		self.Frame:SetBackdrop(backdrop)
+		self.Frame:SetBackdropColor(1,1,1,0.5)
+		self.Frame:SetBackdropBorderColor(1,1,0,1)
+		self.Frame:EnableMouseWheel(1)
+		self.Frame:SetScript("OnMouseWheel", function()
+			local value = self.Frame.Slider:GetValue()
+			self.Frame.Slider:SetValue(value-(arg1*10))
+		end)
+
+	-- Scrollframe
+	self.Frame.Scrollframe = CreateFrame("ScrollFrame", nil, self.Frame)
+		self.Frame.Scrollframe:SetPoint("TOPLEFT", 0, -10)
+		self.Frame.Scrollframe:SetPoint("BOTTOMRIGHT", -15, 10)
+
+	self.Frame.Slider = CreateFrame("Slider", nil, self.Frame, "UIPanelScrollBarTemplate")
+		self.Frame.Slider:SetOrientation('VERTICAL')
+		self.Frame.Slider:SetWidth(16)
+		self.Frame.Slider:SetHeight(self.Frame:GetHeight()-55)
+		self.Frame.Slider:SetPoint("RIGHT",-10,0)
+		self.Frame.Slider:SetMinMaxValues(0, 400)
+		self.Frame.Slider:SetValueStep(1)
+		self.Frame.Slider:SetScript("OnValueChanged", function()
+																	local value = self.Frame.Slider:GetValue()
+																	self.Frame.Scrollframe:SetVerticalScroll(value)
+																end)
+
+	self.Frame.Scrollframe.Content = CreateFrame("Frame", nil, self.Frame.Scrollframe)
+		self.Frame.Scrollframe.Content:SetWidth(300)
+		self.Frame.Scrollframe.Content:SetHeight(400)
+		self.Frame.Scrollframe:SetScrollChild(self.Frame.Scrollframe.Content)
+
+
+	-- Greate 32 Buttons
+	self.Frame.Scrollframe.Content.Block = {}
+	for i=1,32 do
+		local counter = i
+		self.Frame.Scrollframe.Content.Block[i] = CreateFrame("Frame", nil, self.Frame.Scrollframe.Content)
+			self.Frame.Scrollframe.Content.Block[i]:SetWidth(255)
+			self.Frame.Scrollframe.Content.Block[i]:SetHeight(16)
+			self.Frame.Scrollframe.Content.Block[i]:SetPoint("TOPLEFT",15,-(i*18)+16)
+
+		self.Frame.Scrollframe.Content.Block[i].Button = CreateFrame("Button",nil,self.Frame.Scrollframe.Content.Block[i])
+			self.Frame.Scrollframe.Content.Block[i].Button:SetWidth(255)
+			self.Frame.Scrollframe.Content.Block[i].Button:SetHeight(16)
+			self.Frame.Scrollframe.Content.Block[i].Button:SetPoint("TOPLEFT",0,0)
+			self.Frame.Scrollframe.Content.Block[i].Button:SetHighlightTexture("Interface\\Questframe\\UI-QuestTitleHighlight")
+			self.Frame.Scrollframe.Content.Block[i].Button:SetScript("OnClick",function() PlaySound("igMainMenuOptionCheckBoxOn"); end)
+
+			self.Frame.Scrollframe.Content.Block[i].Icon = CreateFrame("Frame", nil, self.Frame.Scrollframe.Content.Block[i])
+				self.Frame.Scrollframe.Content.Block[i].Icon:SetWidth(16)
+				self.Frame.Scrollframe.Content.Block[i].Icon:SetHeight(16)
+				self.Frame.Scrollframe.Content.Block[i].Icon:SetPoint("LEFT",0,0)
+				self.Frame.Scrollframe.Content.Block[i].Icon.Texture = self.Frame.Scrollframe.Content.Block[i].Icon:CreateTexture()
+				self.Frame.Scrollframe.Content.Block[i].Icon.Texture:SetAllPoints()
+				self.Frame.Scrollframe.Content.Block[i].Icon.Texture:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+
+			self.Frame.Scrollframe.Content.Block[i].Font = self.Frame.Scrollframe.Content.Block[i]:CreateFontString(nil, "OVERLAY")
+					self.Frame.Scrollframe.Content.Block[i].Font:SetPoint("LEFT", 20, 0)
+					self.Frame.Scrollframe.Content.Block[i].Font:SetFont("Fonts\\FRIZQT__.TTF", 12)
+					self.Frame.Scrollframe.Content.Block[i].Font:SetWidth(240)
+					self.Frame.Scrollframe.Content.Block[i].Font:SetHeight(16)
+					self.Frame.Scrollframe.Content.Block[i].Font:SetJustifyH("LEFT")
+					self.Frame.Scrollframe.Content.Block[i].Font:SetJustifyV("CENTER")
+					self.Frame.Scrollframe.Content.Block[i].Font:SetText("TEST")
+					self.Frame.Scrollframe.Content.Block[i].Font:SetTextColor(1,1,1)
+					self.Frame.Scrollframe.Content.Block[i].Font:SetShadowOffset(1, -1)
+			self.Frame.Scrollframe.Content.Block[i]:Hide()
+	end
+end
+
+function storyline:GossipStart()
+	-- hide and show
+	storyline:HideAll()
+  UIFrameFadeIn(storyline.Gossip.Frame,0.5)
+	storyline.Background.layer4.Banner:Hide()
+	storyline.Gossip.Frame.Slider:SetValue(0)
+
+	-- close clicking
+	storyline.Background.layer5.Questtext.Fade.Button:SetScript("OnEnter",function()  end)
+	storyline.Background.layer5.Questtext.Fade.Button:SetScript("OnLeave",function() end)
+	storyline.Background.layer5.Questtext.Fade.Button:SetScript("OnClick",function()  end)
+	storyline.Text.Questtext.Continue:Hide()
+	storyline.Text.Questtext.Complete:Hide()
+
+	-- Update PlayerFrames
+	storyline:UpdateModels()
+
+	-- Set GossipText
+	local GossipText = GetGossipText()
+	storyline:ShowNPCText(GossipText)
+
+	--Update Text
+	storyline.Text.NPCName:SetText(UnitName("target"))
+	local QuestTitel = ""
+	storyline.Text.Banner:SetText(QuestTitel)
+
+	-- update click Panels
+	storyline:updateGossip()
+
+	-- show
+	storyline.Background:Show()
+end
+
+function storyline:updateGossip()
+	-- hide all buttons
+	for i=1,32 do storyline.Gossip.Frame.Scrollframe.Content.Block[i]:Hide() end
+
+	local counter = 0 -- counts the number of dialog options
+	local ID = 0 -- ID Button Counter
+	-- local functions -> API delivers unknown/variable num of arguments
+	local function setQuests(...)
+		for i=1,arg.n,2 do
+			counter = counter + 1
+			ID = ID + 1
+			local ChooseID = ID
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Icon.Texture:SetTexture("Interface\\GossipFrame\\AvailableQuestIcon")
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Font:SetText(arg[i])
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Button:SetID(ChooseID)
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Button.type = "Available"
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Button:SetScript("OnClick",function() PlaySound("igMainMenuOptionCheckBoxOn"); GossipTitleButton_OnClick() end)
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter]:Show()
+		end
+ 	end
+
+	local function setActiveQuests(...)
+		for i=1,arg.n,2 do
+			counter = counter + 1
+			ID = ID + 1
+			local ChooseID = ID
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Icon.Texture:SetTexture("Interface\\GossipFrame\\ActiveQuestIcon")
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Font:SetText(arg[i])
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Button:SetID(ChooseID)
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Button.type = "Active"
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Button:SetScript("OnClick",function() PlaySound("igMainMenuOptionCheckBoxOn"); GossipTitleButton_OnClick() end)
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter]:Show()
+		end
+ 	end
+
+	local function setOptions(...)
+		for i=1,arg.n,2 do
+			counter = counter + 1
+			ID = ID + 1
+			local ChooseID = ID
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Icon.Texture:SetTexture("Interface\\GossipFrame\\" .. arg[i+1] .. "GossipIcon")
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Font:SetText(arg[i])
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Button:SetID(ChooseID)
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Button.type = "Option"
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Button:SetScript("OnClick",function() PlaySound("igMainMenuOptionCheckBoxOn"); GossipTitleButton_OnClick() end)
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter]:Show()
+		end
+ 	end
+
+	-- do
+	ID = 0; setQuests(GetGossipAvailableQuests())
+	ID = 0; setActiveQuests(GetGossipActiveQuests())
+	ID = 0; setOptions(GetGossipOptions())
+
+	-- setzp height of Scrollframe
+	if counter == 1 then counter = 2 end -- hreightfix
+	if counter == 0 then storyline.Gossip.Frame:Hide()
+	elseif counter < 9 then
+		storyline.Gossip.Frame.Slider:SetMinMaxValues(0, 0)
+		storyline.Gossip.Frame.Scrollframe.Content:SetHeight(200)
+		storyline.Gossip.Frame:SetHeight((counter*30)	)
+		storyline.Gossip.Frame.Slider:Hide()
+	else
+		storyline.Gossip.Frame.Slider:SetMinMaxValues(0, counter*5)
+		storyline.Gossip.Frame.Scrollframe.Content:SetHeight(counter*5)
+		storyline.Gossip.Frame:SetHeight(200)
+		storyline.Gossip.Frame.Slider:Show()
+	end
+
+end
+
 
 function storyline.QuestDetail:ConfigureFrame()
 
@@ -439,7 +631,7 @@ function storyline.QuestDetail:ConfigureFrame()
 	self.GetQuest.Decline.Button:SetScript("OnClick",function() storyline:DeclineQuest() end)
 
 	self.GetQuest.CenterItem = CreateFrame("Frame",nil,self.GetQuest)
-	local backdrop = {bgFile = "Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\FriendsFrameScrollIcon"}
+	local backdrop = {bgFile = "Interface\\FriendsFrame\\FriendsFrameScrollIcon"}
 		self.GetQuest.CenterItem:SetBackdrop(backdrop)
 		self.GetQuest.CenterItem:SetBackdropColor(1,1,1,1)
 		self.GetQuest.CenterItem:SetWidth(40)
@@ -475,7 +667,7 @@ function storyline.QuestProgress:ConfigureFrame()
 
 	-- Center Items
 	self.Mainframe.CenterItem = CreateFrame("Frame",nil,self.Mainframe)
-		local backdrop = {bgFile = "Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\FriendsFrameScrollIcon"}
+		local backdrop = {bgFile = "Interface\\FriendsFrame\\FriendsFrameScrollIcon"}
 		self.Mainframe.CenterItem:SetBackdrop(backdrop)
 		self.Mainframe.CenterItem:SetBackdropColor(1,1,1,1)
 		self.Mainframe.CenterItem:SetWidth(40)
@@ -1467,7 +1659,8 @@ end
 function storyline:AcceptQuest()
 	-- hide and show
 	storyline:HideAll()
-        UIFrameFadeIn(storyline.QuestDetail.GetQuest,0.5)
+  UIFrameFadeIn(storyline.QuestDetail.GetQuest,0.5)
+	storyline.Background.layer4.Banner:Show()
 
 	-- open clicking
 	storyline.Background.layer5.Questtext.Fade.Button:SetScript("OnEnter",function()
@@ -1512,6 +1705,7 @@ function storyline:ProgressQuest()
 	-- hide and show
 	storyline:HideAll()
 	UIFrameFadeIn(storyline.QuestProgress.Mainframe,0.5)
+	storyline.Background.layer4.Banner:Show()
 
 	-- point to Quest
 	storyline:GetObjectiveText()
@@ -1586,6 +1780,7 @@ function storyline:CompleteQuest()
 	-- hide and show
 	storyline:HideAll()
 	UIFrameFadeIn(storyline.QuestComplete.Mainframe,0.5)
+	storyline.Background.layer4.Banner:Show()
 	storyline:UpdateRewardItems()
 	for i=1,6 do storyline.QuestComplete.Mainframe.Reward.Block[i]:SetBackdropColor(0.8,0.8,0.8,0) end
 
@@ -1838,6 +2033,8 @@ end
 
 -- hide frames after Eventcall
 function storyline:HideAll()
+	-- Hide Gossip Frame
+	storyline.Gossip.Frame:Hide()
 	-- Hide Quest Detail
 	storyline.QuestDetail.GetQuest:Hide()
 
@@ -1855,6 +2052,11 @@ end
 function storyline:HideBlizzard()
 
 	if storyline.Options.HideBlizzardFrames == 1 then
+		-- Gossip Frame
+		GossipFrameGreetingPanel:Hide()
+		GossipNpcNameFrame:Hide()
+		GossipFrameCloseButton:Hide()
+		GossipFramePortrait:SetTexture()
 		-- Accept Quest Interact
 		QuestFrameDetailPanel:Hide()
 		QuestNpcNameFrame:Hide()
@@ -1865,6 +2067,9 @@ function storyline:HideBlizzard()
 		-- Reward Quest Interact
 		QuestFrameRewardPanel:Hide()
 	else
+		GossipFrameGreetingPanel:Show()
+		GossipNpcNameFrame:Show()
+		GossipFrameCloseButton:Show()
 
 	end
 end
