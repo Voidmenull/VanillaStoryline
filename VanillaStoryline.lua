@@ -23,7 +23,7 @@ storyline:RegisterEvent("ADDON_LOADED")
 storyline:RegisterEvent("QUEST_DETAIL")
 storyline:RegisterEvent("QUEST_PROGRESS")
 storyline:RegisterEvent("QUEST_COMPLETE")
---storyline:RegisterEvent("QUEST_GREETING")
+storyline:RegisterEvent("QUEST_GREETING")
 storyline:RegisterEvent("QUEST_FINISHED")
 storyline:RegisterEvent("QUEST_ITEM_UPDATE")
 storyline:RegisterEvent("GOSSIP_SHOW")
@@ -43,6 +43,8 @@ storyline.Variables.fadingProgress = 0
 storyline.Variables.ModelProgress = 0
 storyline.Variables.SliderProgress = 0
 storyline.Variables.QuesttextLength = 0
+storyline.Variables.GreetingsFlag = 0
+storyline.Variables.ModelOpened = 0
 storyline.Variables.LastTime = 0
 storyline.Variables.ModelTime = 0
 storyline.Variables.Time = 0
@@ -83,13 +85,17 @@ function storyline:OnEvent()
 		storyline:HideBlizzard()
 		storyline:CompleteQuest()
 	elseif event == "QUEST_GREETING" then
-		print("QUEST_GREETING")
+		storyline.Variables.GreetingsFlag = 1
+		storyline:HideBlizzard()
+		storyline:GossipStart()
 	elseif event == "QUEST_FINISHED" then
 		DeclineQuest()
 		storyline.Background:Hide()
-	elseif event == "QUEST_ITEM_UPDATE" then
-		print("QUEST_ITEM_UPDATE")
+	elseif event == "QUEST_ITEM_UPDATE" then -- no update impleted - reload frame instead
+		DeclineQuest()
+		storyline.Background:Hide()
 	elseif event == "GOSSIP_SHOW" then
+		storyline.Variables.GreetingsFlag = 0
 		storyline:HideBlizzard()
 		storyline:GossipStart()
 	elseif event == "GOSSIP_CLOSED" then
@@ -493,7 +499,9 @@ function storyline:GossipStart()
 	storyline:UpdateModels()
 
 	-- Set GossipText
-	local GossipText = GetGossipText()
+	local GossipText = ""
+	if storyline.Variables.GreetingsFlag == 1 then GossipText =  GetGreetingText()
+	else GossipText = GetGossipText() end
 	storyline:ShowNPCText(GossipText)
 
 	--Update Text
@@ -557,10 +565,41 @@ function storyline:updateGossip()
 		end
  	end
 
-	-- do
-	ID = 0; setQuests(GetGossipAvailableQuests())
-	ID = 0; setActiveQuests(GetGossipActiveQuests())
-	ID = 0; setOptions(GetGossipOptions())
+	-- do for gossip
+	if storyline.Variables.GreetingsFlag == 0 then
+		ID = 0; setQuests(GetGossipAvailableQuests())
+		ID = 0; setActiveQuests(GetGossipActiveQuests())
+		ID = 0; setOptions(GetGossipOptions())
+	end
+
+	-- do for greetings
+	if storyline.Variables.GreetingsFlag == 1 then
+		counter = 0
+		local numActiveQuests = GetNumActiveQuests()
+		local numAvailableQuests = GetNumAvailableQuests()
+
+		for i=1,numActiveQuests do
+			counter = counter + 1
+			local ChooseID = i
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Icon.Texture:SetTexture("Interface\\GossipFrame\\ActiveQuestIcon")
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Font:SetText(GetActiveTitle(i))
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Button:SetID(ChooseID)
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Button.isActive = 1
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Button:SetScript("OnClick",function() PlaySound("igMainMenuOptionCheckBoxOn"); QuestTitleButton_OnClick() end)
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter]:Show()
+		end
+
+		for i=(numActiveQuests + 1), (numActiveQuests + numAvailableQuests) do
+			counter = counter + 1
+			local ChooseID = i - numActiveQuests
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Icon.Texture:SetTexture("Interface\\GossipFrame\\AvailableQuestIcon")
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Font:SetText(GetAvailableTitle(i - numActiveQuests))
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Button:SetID(ChooseID)
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Button.isActive = 0
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter].Button:SetScript("OnClick",function() PlaySound("igMainMenuOptionCheckBoxOn"); QuestTitleButton_OnClick() end)
+			storyline.Gossip.Frame.Scrollframe.Content.Block[counter]:Show()
+		end
+	end
 
 	-- setzp height of Scrollframe
 	if counter == 1 then counter = 2 end -- hreightfix
@@ -1998,9 +2037,11 @@ end
 
 -- Update 3D Models
 function storyline:UpdateModels()
-	if UnitExists("target") then storyline.NPC.PlayerFrame:SetUnit("target")
-	else storyline.NPC.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2"); storyline.NPC.PlayerFrame:SetModelScale(2) end
-	storyline.Player.PlayerFrame:SetUnit("player")
+	if not storyline.Background:IsVisible() then
+		if UnitExists("target") then storyline.NPC.PlayerFrame:SetUnit("target")
+		else storyline.NPC.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2"); storyline.NPC.PlayerFrame:SetModelScale(2) end
+		storyline.Player.PlayerFrame:SetUnit("player")
+	end
 end
 
 -- Fill the Scrollframe + Fade
@@ -2052,6 +2093,8 @@ end
 function storyline:HideBlizzard()
 
 	if storyline.Options.HideBlizzardFrames == 1 then
+		-- Greetings Frames
+		QuestFrameGreetingPanel:Hide()
 		-- Gossip Frame
 		GossipFrameGreetingPanel:Hide()
 		GossipNpcNameFrame:Hide()
