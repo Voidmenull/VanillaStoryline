@@ -611,10 +611,10 @@ function storyline:updateGossip()
 	elseif counter < 9 then
 		storyline.Gossip.Frame.Slider:SetMinMaxValues(0, 0)
 		storyline.Gossip.Frame.Scrollframe.Content:SetHeight(200)
-		storyline.Gossip.Frame:SetHeight((counter*19)	)
+		storyline.Gossip.Frame:SetHeight(counter*21)
 		storyline.Gossip.Frame.Slider:Hide()
 	else
-		storyline.Gossip.Frame.Slider:SetMinMaxValues(0, counter*4)
+		storyline.Gossip.Frame.Slider:SetMinMaxValues(0, counter*5)
 		storyline.Gossip.Frame.Scrollframe.Content:SetHeight(counter*5)
 		storyline.Gossip.Frame:SetHeight(200)
 		storyline.Gossip.Frame.Slider:Show()
