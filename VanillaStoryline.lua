@@ -447,10 +447,14 @@ function storyline.Gossip:ConfigureFrame()
 	self.Frame.Scrollframe.Content.Block = {}
 	for i=1,32 do
 		local counter = i
-		self.Frame.Scrollframe.Content.Block[i] = CreateFrame("Frame", nil, self.Frame.Scrollframe.Content)
+		if i == 1 then 	self.Frame.Scrollframe.Content.Block[i] = CreateFrame("Frame", nil, self.Frame.Scrollframe.Content)
+										self.Frame.Scrollframe.Content.Block[i]:SetPoint("TOPLEFT",15,-2)
+		else 	self.Frame.Scrollframe.Content.Block[i] = CreateFrame("Frame", nil, self.Frame.Scrollframe.Content.Block[i-1])
+					self.Frame.Scrollframe.Content.Block[i]:SetPoint("BOTTOMLEFT",0,-18) end
+
 			self.Frame.Scrollframe.Content.Block[i]:SetWidth(255)
 			self.Frame.Scrollframe.Content.Block[i]:SetHeight(16)
-			self.Frame.Scrollframe.Content.Block[i]:SetPoint("TOPLEFT",15,-(i*18)+16)
+
 
 		self.Frame.Scrollframe.Content.Block[i].Button = CreateFrame("Button",nil,self.Frame.Scrollframe.Content.Block[i])
 			self.Frame.Scrollframe.Content.Block[i].Button:SetWidth(255)
@@ -601,16 +605,16 @@ function storyline:updateGossip()
 		end
 	end
 
-	-- setzp height of Scrollframe
-	if counter == 1 then counter = 2 end -- hreightfix
+	-- set height of Scrollframe
+	if counter < 3 and counter ~= 0 then counter = 3 end -- heightfix
 	if counter == 0 then storyline.Gossip.Frame:Hide()
 	elseif counter < 9 then
 		storyline.Gossip.Frame.Slider:SetMinMaxValues(0, 0)
 		storyline.Gossip.Frame.Scrollframe.Content:SetHeight(200)
-		storyline.Gossip.Frame:SetHeight((counter*30)	)
+		storyline.Gossip.Frame:SetHeight((counter*19)	)
 		storyline.Gossip.Frame.Slider:Hide()
 	else
-		storyline.Gossip.Frame.Slider:SetMinMaxValues(0, counter*5)
+		storyline.Gossip.Frame.Slider:SetMinMaxValues(0, counter*4)
 		storyline.Gossip.Frame.Scrollframe.Content:SetHeight(counter*5)
 		storyline.Gossip.Frame:SetHeight(200)
 		storyline.Gossip.Frame.Slider:Show()
@@ -1958,7 +1962,6 @@ function storyline:UpdateRewardItems()
 	if gold == 0 then storyline.QuestComplete.Mainframe.Reward.Money.Gold:Hide() else storyline.QuestComplete.Mainframe.Reward.Money.Gold:Show() end
 	if gold == 0 and silver == 0 then storyline.QuestComplete.Mainframe.Reward.Money.Silver:Hide() else storyline.QuestComplete.Mainframe.Reward.Money.Silver:Show() end
 
-
 	if money > 0 then
 		storyline.QuestComplete.Mainframe.Reward.Money:Show()
 		storyline.QuestComplete.Mainframe.Reward.Money.Gold.Font:SetText(gold)
@@ -1968,68 +1971,67 @@ function storyline:UpdateRewardItems()
 	end
 
   for i=1,numQuestChoices do
+		counter = counter + 1
 		local IDnum = i
 		local name, texture, numItems, quality, isUsable = GetQuestItemInfo("choice", i)
 		if numItems == 1 then numItems = " " end -- dont show 1 item
 
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item:SetBackdrop({bgFile = texture})
-		if not isUsable then storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item:SetBackdropColor(1,0,0,1)
-                else storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item:SetBackdropColor(1,1,1,1) end
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Font:SetText(numItems)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].TextFont:SetText(name)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button:SetID(IDnum)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button.type = "choice"
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button:SetScript("OnEnter",function()
-													GameTooltip:SetOwner(storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item,"TOPLEFT")
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item:SetBackdrop({bgFile = texture})
+		if not isUsable then storyline.QuestComplete.Mainframe.Reward.Block[counter].Item:SetBackdropColor(1,0,0,1)
+                else storyline.QuestComplete.Mainframe.Reward.Block[counter].Item:SetBackdropColor(1,1,1,1) end
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Font:SetText(numItems)
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].TextFont:SetText(name)
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button:SetID(IDnum)
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button.type = "choice"
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button:SetScript("OnEnter",function()
+													GameTooltip:SetOwner(storyline.QuestComplete.Mainframe.Reward.Block[counter].Item,"TOPLEFT")
 													GameTooltip:SetQuestItem("choice", this:GetID())
 													end)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button:SetScript("OnLeave",function() GameTooltip:Hide(); ResetCursor() end)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button:SetScript("OnClick",function() storyline:QuestReward_OnClick() end)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum]:Show()
-
-    counter = i
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button:SetScript("OnLeave",function() GameTooltip:Hide(); ResetCursor() end)
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button:SetScript("OnClick",function() storyline:QuestReward_OnClick() end)
+		storyline.QuestComplete.Mainframe.Reward.Block[counter]:Show()
 	end
 
 	-- display Rewards
-	for i=(counter+1),numQuestRewards do
+	for i=1,numQuestRewards do
+		counter = counter + 1
 		local IDnum = i
 		local name, texture, numItems, quality, isUsable = GetQuestItemInfo("reward", i)
 		if numItems == 1 then numItems = " " end -- dont show 1 item
 
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item:SetBackdrop({bgFile = texture})
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Font:SetText(numItems)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].TextFont:SetText(name)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button:SetID(IDnum)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button.type = "reward"
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button:SetScript("OnEnter",function()
-													GameTooltip:SetOwner(storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item,"TOPLEFT")
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item:SetBackdrop({bgFile = texture})
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Font:SetText(numItems)
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].TextFont:SetText(name)
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button:SetID(IDnum)
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button.type = "reward"
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button:SetScript("OnEnter",function()
+													GameTooltip:SetOwner(storyline.QuestComplete.Mainframe.Reward.Block[counter].Item,"TOPLEFT")
 													GameTooltip:SetQuestItem("reward", this:GetID())
 													end)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button:SetScript("OnLeave",function() GameTooltip:Hide(); ResetCursor() end)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button:SetScript("OnClick",function() end)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum]:Show()
-
-    counter = i
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button:SetScript("OnLeave",function() GameTooltip:Hide(); ResetCursor() end)
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button:SetScript("OnClick",function() end)
+		storyline.QuestComplete.Mainframe.Reward.Block[counter]:Show()
 	end
 
   if GetRewardSpell() then
-
-    local IDnum =  counter + 1
-		local name, texture, numItems, quality, isUsable = GetQuestItemInfo("spell", 1)
+		counter = counter + 1
+    local IDnum =  1
+		local numItems = 1
+		local texture, name, isTradeskillSpell = GetQuestLogRewardSpell()
 		if numItems == 1 then numItems = " " end -- dont show 1 item
 
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item:SetBackdrop({bgFile = texture})
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Font:SetText(numItems)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].TextFont:SetText(name)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button:SetID(IDnum)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button.type = "spell"
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button:SetScript("OnEnter",function()
-													GameTooltip:SetOwner(storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item,"TOPLEFT")
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item:SetBackdrop({bgFile = texture})
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Font:SetText(numItems)
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].TextFont:SetText(name)
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button:SetID(IDnum)
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button.type = "spell"
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button:SetScript("OnEnter",function()
+													GameTooltip:SetOwner(storyline.QuestComplete.Mainframe.Reward.Block[counter].Item,"TOPLEFT")
 													GameTooltip:SetQuestItem("spell", this:GetID())
 													end)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button:SetScript("OnLeave",function() GameTooltip:Hide(); ResetCursor() end)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum].Item.Button:SetScript("OnClick",function() end)
-		storyline.QuestComplete.Mainframe.Reward.Block[IDnum]:Show()
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button:SetScript("OnLeave",function() GameTooltip:Hide(); ResetCursor() end)
+		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button:SetScript("OnClick",function() end)
+		storyline.QuestComplete.Mainframe.Reward.Block[counter]:Show()
   end
 	-- hide if no rewards
 	if totalRewards == 0 then storyline.QuestComplete.Mainframe:Hide() end
