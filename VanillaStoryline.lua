@@ -1899,26 +1899,28 @@ function storyline:UpdateReqItems()
 	local startCounter = 1
 	if numRequiredItems > 6 then numRequiredItems = 6 end -- max display of 6 items
 	local questItemName = "QuestProgressItem"
+	local counter = 0
 
 	if numRequiredItems > 0 then
 		-- check for gold req.
 		if numRequiredMoney > 0 then
-			storyline.QuestProgress.Mainframe.Objective.Block[1].Item:SetBackdrop({bgFile = "Interface\\Icons\\INV_Misc_Coin_02"})
-			storyline.QuestProgress.Mainframe.Objective.Block[1].Item.Font:SetText(numRequiredMoney)
-			storyline.QuestProgress.Mainframe.Objective.Block[1].TextFont:SetText("Gold")
-			storyline.QuestProgress.Mainframe.Objective.Block[1]:Show()
-			startCounter = 2
+			counter = counter + 1
+			storyline.QuestProgress.Mainframe.Objective.Block[counter].Item:SetBackdrop({bgFile = "Interface\\Icons\\INV_Misc_Coin_02"})
+			storyline.QuestProgress.Mainframe.Objective.Block[counter].Item.Font:SetText(numRequiredMoney)
+			storyline.QuestProgress.Mainframe.Objective.Block[counter].TextFont:SetText("Gold")
+			storyline.QuestProgress.Mainframe.Objective.Block[counter]:Show()
+
 		end
 
-		for i=startCounter,numRequiredItems do
-
+		for i=1,numRequiredItems do
+			counter = counter + 1
 			local name, texture, numItems = GetQuestItemInfo("required", i)
 			if numItems == 1 then numItems = " " end -- dont show 1 item
 
-			storyline.QuestProgress.Mainframe.Objective.Block[i].Item:SetBackdrop({bgFile = texture})
-			storyline.QuestProgress.Mainframe.Objective.Block[i].Item.Font:SetText(numItems)
-			storyline.QuestProgress.Mainframe.Objective.Block[i].TextFont:SetText(name)
-			storyline.QuestProgress.Mainframe.Objective.Block[i]:Show()
+			storyline.QuestProgress.Mainframe.Objective.Block[counter].Item:SetBackdrop({bgFile = texture})
+			storyline.QuestProgress.Mainframe.Objective.Block[counter].Item.Font:SetText(numItems)
+			storyline.QuestProgress.Mainframe.Objective.Block[counter].TextFont:SetText(name)
+			storyline.QuestProgress.Mainframe.Objective.Block[counter]:Show()
 		end
 
 		else
@@ -2039,11 +2041,10 @@ end
 
 -- Update 3D Models
 function storyline:UpdateModels()
-	if not storyline.Background:IsVisible() then
-		if UnitExists("target") then storyline.NPC.PlayerFrame:SetUnit("target")
-		else storyline.NPC.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2"); storyline.NPC.PlayerFrame:SetModelScale(2) end
-		storyline.Player.PlayerFrame:SetUnit("player")
-	end
+	if UnitExists("target") then storyline.NPC.PlayerFrame:SetUnit("target")
+	else storyline.NPC.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2"); storyline.NPC.PlayerFrame:SetModelScale(2) end
+	storyline.Player.PlayerFrame:SetUnit("player")
+print(storyline.NPC.PlayerFrame:GetModel())
 end
 
 -- Fill the Scrollframe + Fade
