@@ -2044,7 +2044,7 @@ function storyline:UpdateModels()
 	if UnitExists("target") then storyline.NPC.PlayerFrame:SetUnit("target")
 	else storyline.NPC.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2"); storyline.NPC.PlayerFrame:SetModelScale(2) end
 	storyline.Player.PlayerFrame:SetUnit("player")
-print(storyline.NPC.PlayerFrame:GetModel())
+-- print(storyline.NPC.PlayerFrame:GetModel())
 end
 
 -- Fill the Scrollframe + Fade
