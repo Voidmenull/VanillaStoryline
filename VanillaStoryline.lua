@@ -611,7 +611,7 @@ function storyline:updateGossip()
 	elseif counter < 9 then
 		storyline.Gossip.Frame.Slider:SetMinMaxValues(0, 0)
 		storyline.Gossip.Frame.Scrollframe.Content:SetHeight(200)
-		storyline.Gossip.Frame:SetHeight(counter*21)
+		storyline.Gossip.Frame:SetHeight(counter*22)
 		storyline.Gossip.Frame.Slider:Hide()
 	else
 		storyline.Gossip.Frame.Slider:SetMinMaxValues(0, counter*5)
@@ -2019,7 +2019,7 @@ function storyline:UpdateRewardItems()
 		counter = counter + 1
     local IDnum =  1
 		local numItems = 1
-		local texture, name, isTradeskillSpell = GetQuestLogRewardSpell()
+		local texture, name, isTradeskillSpell = GetRewardSpell()
 		if numItems == 1 then numItems = " " end -- dont show 1 item
 
 		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item:SetBackdrop({bgFile = texture})
@@ -2029,7 +2029,7 @@ function storyline:UpdateRewardItems()
 		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button.type = "spell"
 		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button:SetScript("OnEnter",function()
 													GameTooltip:SetOwner(storyline.QuestComplete.Mainframe.Reward.Block[counter].Item,"TOPLEFT")
-													GameTooltip:SetQuestItem("spell", this:GetID())
+													GameTooltip:SetQuestRewardSpell()
 													end)
 		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button:SetScript("OnLeave",function() GameTooltip:Hide(); ResetCursor() end)
 		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Button:SetScript("OnClick",function() end)
@@ -2044,7 +2044,7 @@ function storyline:UpdateModels()
 	if UnitExists("target") then storyline.NPC.PlayerFrame:SetUnit("target")
 	else storyline.NPC.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2"); storyline.NPC.PlayerFrame:SetModelScale(2) end
 	storyline.Player.PlayerFrame:SetUnit("player")
--- print(storyline.NPC.PlayerFrame:GetModel())
+	--local a,b,c,d = storyline.NPC.PlayerFrame:GetModel()
 end
 
 -- Fill the Scrollframe + Fade
