@@ -73,7 +73,7 @@ function storyline:OnEvent()
 		storyline.QuestComplete:ConfigureFrame() -- configure Quest complete frame
     storyline.OptionsFrame:ConfigureFrame() -- configure Options Frame
 		storyline.Background:Hide()
-		--storyline.NPC.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2") -- modelfix: set random model first, so GetModel will be avalible for "target" later
+	--	storyline.NPC.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2") -- modelfix: set random model first, so GetModel will be avalible for "target" later
 
 	elseif event == "QUEST_DETAIL" then
 		storyline:HideBlizzard()
@@ -2051,7 +2051,12 @@ function storyline:UpdateModels()
 	if UnitExists("target") then storyline.NPC.PlayerFrame:SetUnit("target")
 	else storyline.NPC.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2"); storyline.NPC.PlayerFrame:SetModelScale(2) end
 	storyline.Player.PlayerFrame:SetUnit("player")
-	--local a,b,c,d = storyline.NPC.PlayerFrame:GetModel()
+
+	-- Model scale Fixes for uncommon creatures -- later DOTO
+	--local model = storyline.NPC.PlayerFrame:GetModel()
+	--print(model)
+	--if model == "Creature\HighElf\HighElfMale_Hunter" then storyline.NPC.PlayerFrame:SetPosition(-4.5,4,1); storyline.NPC.PlayerFrame:SetRotation(-1.2); print("modelin")
+--	end
 end
 
 -- Fill the Scrollframe + Fade
@@ -2079,10 +2084,6 @@ function storyline:ShowNPCText(Text,Offset)
 	elseif QUEST_FADING_DISABLE == "0" then
 		storyline.Options.Fading = 1
 	end
-	-- Model scale Fixes for uncommon creatures -- later DOTO
---	local model = storyline.NPC.PlayerFrame:GetModel()
----	if model == "Creature\HighElf\HighElfMale_Hunter" then storyline.NPC.PlayerFrame:SetPosition(-4.5,4,1); storyline.NPC.PlayerFrame:SetRotation(-1.2); print("model")
---	end
 end
 
 -- hide frames after Eventcall
