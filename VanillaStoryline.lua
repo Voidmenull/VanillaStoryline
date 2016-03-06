@@ -36,7 +36,7 @@ storyline.Options.GradientLength = 30
 storyline.Options.Offset = 0 -- text offset for max. scroll frame
 storyline.Options.Delay = 0.03 -- 30 fps update
 storyline.Options.DelayModel = 1
-storyline.Options.Version = 0.2 -- version
+storyline.Options.Version = "0.2.1" -- version
 
 storyline.Variables.fadingProgress = 0
 storyline.Variables.ModelProgress = 0
@@ -320,7 +320,7 @@ function storyline.Background:ConfigureFrame()
 		self.layer5.Questtext:SetBackdrop(backdrop)
 		self.layer5.Questtext:SetBackdropColor(1,1,1,1)
 		self.layer5.Questtext:SetWidth(650)
-		self.layer5.Questtext:SetHeight(130)
+		self.layer5.Questtext:SetHeight(100)
 		self.layer5.Questtext:SetPoint("BOTTOM",0,20)
 		self.layer5.Questtext:EnableMouseWheel(1)
 		self.layer5.Questtext:SetScript("OnMouseWheel", function()
@@ -337,7 +337,7 @@ function storyline.Background:ConfigureFrame()
 	self.layer5.Questtext.Slider = CreateFrame("Slider", nil, self.layer5.Questtext, "UIPanelScrollBarTemplate")
 		self.layer5.Questtext.Slider:SetOrientation('VERTICAL')
 		self.layer5.Questtext.Slider:SetWidth(16)
-		self.layer5.Questtext.Slider:SetHeight(80)
+		self.layer5.Questtext.Slider:SetHeight(50)
 		self.layer5.Questtext.Slider:SetPoint("RIGHT",-8,0)
 		self.layer5.Questtext.Slider:SetMinMaxValues(0, 170)
 		self.layer5.Questtext.Slider:SetValueStep(1)
