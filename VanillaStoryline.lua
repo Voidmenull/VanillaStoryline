@@ -36,7 +36,7 @@ storyline.Options.GradientLength = 30
 storyline.Options.Offset = 0 -- text offset for max. scroll frame
 storyline.Options.Delay = 0.03 -- 30 fps update
 storyline.Options.DelayModel = 1
-storyline.Options.Version = 0.1 -- version
+storyline.Options.Version = 0.2 -- version
 
 storyline.Variables.fadingProgress = 0
 storyline.Variables.ModelProgress = 0
