@@ -3,7 +3,6 @@ function print(content)
 	DEFAULT_CHAT_FRAME:AddMessage(content)
 end
 
-
 -- local later
 local storyline = CreateFrame("Frame",nil); -- Event Frame
 	storyline.Background = CreateFrame("Frame","StorylineFrame",UIParent) -- Background Frame
@@ -74,6 +73,7 @@ function storyline:OnEvent()
 		storyline.QuestComplete:ConfigureFrame() -- configure Quest complete frame
     storyline.OptionsFrame:ConfigureFrame() -- configure Options Frame
 		storyline.Background:Hide()
+		--storyline.NPC.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2") -- modelfix: set random model first, so GetModel will be avalible for "target" later
 
 	elseif event == "QUEST_DETAIL" then
 		storyline:HideBlizzard()
@@ -320,7 +320,7 @@ function storyline.Background:ConfigureFrame()
 		self.layer5.Questtext:SetBackdrop(backdrop)
 		self.layer5.Questtext:SetBackdropColor(1,1,1,1)
 		self.layer5.Questtext:SetWidth(650)
-		self.layer5.Questtext:SetHeight(100)
+		self.layer5.Questtext:SetHeight(130)
 		self.layer5.Questtext:SetPoint("BOTTOM",0,20)
 		self.layer5.Questtext:EnableMouseWheel(1)
 		self.layer5.Questtext:SetScript("OnMouseWheel", function()
@@ -337,8 +337,8 @@ function storyline.Background:ConfigureFrame()
 	self.layer5.Questtext.Slider = CreateFrame("Slider", nil, self.layer5.Questtext, "UIPanelScrollBarTemplate")
 		self.layer5.Questtext.Slider:SetOrientation('VERTICAL')
 		self.layer5.Questtext.Slider:SetWidth(16)
-		self.layer5.Questtext.Slider:SetHeight(50)
-		self.layer5.Questtext.Slider:SetPoint("RIGHT",-10,0)
+		self.layer5.Questtext.Slider:SetHeight(80)
+		self.layer5.Questtext.Slider:SetPoint("RIGHT",-8,0)
 		self.layer5.Questtext.Slider:SetMinMaxValues(0, 170)
 		self.layer5.Questtext.Slider:SetValueStep(1)
 		self.layer5.Questtext.Slider:SetScript("OnValueChanged", function()
@@ -386,7 +386,7 @@ function storyline.Background:ConfigureFrame()
 		self.CloseButton:SetPushedTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Down")
 		self.CloseButton:SetHighlightTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight")
 		self.CloseButton:SetScript("OnClick",function() PlaySound("igMainMenuOptionCheckBoxOn")
-																						DeclineQuest(); storyline:HideAll(); storyline.Background:Hide()
+																						DeclineQuest(); PlaySound("igQuestCancel");storyline:HideAll(); storyline.Background:Hide()
 																					end)
 
 	-- Options button
@@ -606,15 +606,15 @@ function storyline:updateGossip()
 	end
 
 	-- set height of Scrollframe
-	if counter < 3 and counter ~= 0 then counter = 3 end -- heightfix
+	if counter < 3 and counter ~= 0 then counter = 2 end -- heightfix
 	if counter == 0 then storyline.Gossip.Frame:Hide()
 	elseif counter < 9 then
 		storyline.Gossip.Frame.Slider:SetMinMaxValues(0, 0)
 		storyline.Gossip.Frame.Scrollframe.Content:SetHeight(200)
-		storyline.Gossip.Frame:SetHeight(counter*22)
+		storyline.Gossip.Frame:SetHeight((counter*18) + 25)
 		storyline.Gossip.Frame.Slider:Hide()
 	else
-		storyline.Gossip.Frame.Slider:SetMinMaxValues(0, counter*5)
+		storyline.Gossip.Frame.Slider:SetMinMaxValues(0, (counter*5)-16)
 		storyline.Gossip.Frame.Scrollframe.Content:SetHeight(counter*5)
 		storyline.Gossip.Frame:SetHeight(200)
 		storyline.Gossip.Frame.Slider:Show()
@@ -671,7 +671,7 @@ function storyline.QuestDetail:ConfigureFrame()
 														GameTooltip:Show()
 													end)
 	self.GetQuest.Decline.Button:SetScript("OnLeave",function() GameTooltip:Hide() end)
-	self.GetQuest.Decline.Button:SetScript("OnClick",function() storyline:DeclineQuest() end)
+	self.GetQuest.Decline.Button:SetScript("OnClick",function() storyline:DeclineQuest();PlaySound("igQuestCancel"); end)
 
 	self.GetQuest.CenterItem = CreateFrame("Frame",nil,self.GetQuest)
 	local backdrop = {bgFile = "Interface\\FriendsFrame\\FriendsFrameScrollIcon"}
@@ -1582,7 +1582,7 @@ function storyline.OptionsFrame:ConfigureFrame()
 				self.HideButton:SetScript("OnClick", function ()
 													 PlaySound("igMainMenuOptionCheckBoxOn")
 													 if self.HideButton:GetChecked() then storyline.Options.HideBlizzardFrames = 1; StorylineOptions.HideBlizzardFrames = 1
- 													 else storyline.Options.HideBlizzardFrames = 0; StorylineOptions.HideBlizzardFrames = 0; DeclineQuest() end
+ 													 else storyline.Options.HideBlizzardFrames = 0; StorylineOptions.HideBlizzardFrames = 0; DeclineQuest(); PlaySound("igQuestCancel"); end
 													 storyline:HideBlizzard()
 													 end)
 			if storyline.Options.HideBlizzardFrames == 1 then self.HideButton:SetChecked(1)
@@ -1714,6 +1714,9 @@ function storyline:AcceptQuest()
 	storyline.Text.Questtext.Continue:Show()
 	storyline.Text.Questtext.Complete:Hide()
 
+	-- play sound
+	PlaySound("WriteQuest")
+
 	-- Update PlayerFrames
 	storyline:UpdateModels()
 
@@ -1733,6 +1736,7 @@ end
 
 function storyline:AcceptQuestOnClick()
 	-- close clicking
+	storyline.Background.layer5.Questtext:SetBackdropBorderColor(1,1,1,1)
 	storyline.Background.layer5.Questtext.Fade.Button:SetScript("OnEnter",function()
 											storyline.Background.layer5.Questtext:SetBackdropBorderColor(1,1,1,1)
                                                                             end)
@@ -1865,7 +1869,10 @@ function storyline:GetObjectiveText()
 	-- check if EQL3 (Extended Quest Log Addon) is active - EQL3 adds a [lvl] into text
 	if EQL3_QuestLogFrame then
 		for i=1, numEntries do
-			QuestLogTitel,QuestLogTitelLevel = GetQuestLogTitle(i)
+			QuestLogTitel,QuestLogTitelLevel,questTag = GetQuestLogTitle(i)
+			if (questTag ~= NIL) then
+						QuestLogTitelLevel = QuestLogTitelLevel.."+";
+			end
 			if "["..QuestLogTitelLevel.."] "..QuestLogTitel == QuestTitel then
 				QuestID = i
 			end
@@ -2072,7 +2079,10 @@ function storyline:ShowNPCText(Text,Offset)
 	elseif QUEST_FADING_DISABLE == "0" then
 		storyline.Options.Fading = 1
 	end
-
+	-- Model scale Fixes for uncommon creatures -- later DOTO
+--	local model = storyline.NPC.PlayerFrame:GetModel()
+---	if model == "Creature\HighElf\HighElfMale_Hunter" then storyline.NPC.PlayerFrame:SetPosition(-4.5,4,1); storyline.NPC.PlayerFrame:SetRotation(-1.2); print("model")
+--	end
 end
 
 -- hide frames after Eventcall
