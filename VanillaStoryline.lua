@@ -36,7 +36,7 @@ storyline.Options.GradientLength = 30
 storyline.Options.Offset = 0 -- text offset for max. scroll frame
 storyline.Options.Delay = 0.03 -- 30 fps update
 storyline.Options.DelayModel = 1
-storyline.Options.Version = "0.2.1" -- version
+storyline.Options.Version = "0.2.2" -- version
 
 storyline.Variables.fadingProgress = 0
 storyline.Variables.ModelProgress = 0
@@ -2123,6 +2123,12 @@ function storyline:HideBlizzard()
 		QuestFrameProgressPanel:Hide()
 		-- Reward Quest Interact
 		QuestFrameRewardPanel:Hide()
+		-- if Adapt addon is active
+		if Adapt and Adapt.Textures and Adapt.Textures["GossipFramePortrait"] then Adapt.Textures["GossipFramePortrait"]:Hide() end
+		if Adapt and Adapt.Textures and Adapt.Textures["GossipFramePortrait"] and Adapt.Textures["GossipFramePortrait"].modelLayer then Adapt.Textures["GossipFramePortrait"].modelLayer:Hide() end
+		if Adapt and Adapt.Textures and Adapt.Textures["QuestFramePortrait"] then Adapt.Textures["QuestFramePortrait"]:Hide() end
+		if Adapt and Adapt.Textures and Adapt.Textures["QuestFramePortrait"] and Adapt.Textures["QuestFramePortrait"].modelLayer then Adapt.Textures["QuestFramePortrait"].modelLayer:Hide() end
+		
 	else
 		GossipFrameGreetingPanel:Show()
 		GossipNpcNameFrame:Show()
