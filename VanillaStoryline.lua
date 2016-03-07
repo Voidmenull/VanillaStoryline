@@ -36,7 +36,7 @@ storyline.Options.GradientLength = 30
 storyline.Options.Offset = 0 -- text offset for max. scroll frame
 storyline.Options.Delay = 0.03 -- 30 fps update
 storyline.Options.DelayModel = 1
-storyline.Options.Version = "0.2.2" -- version
+storyline.Options.Version = "0.2.3" -- version
 
 storyline.Variables.fadingProgress = 0
 storyline.Variables.ModelProgress = 0
@@ -1867,7 +1867,7 @@ function storyline:GetObjectiveText()
 	local ObjectiveText
 
 	-- check if EQL3 (Extended Quest Log Addon) is active - EQL3 adds a [lvl] into text
-	if EQL3_QuestLogFrame then
+	--[[if EQL3_QuestLogFrame then
 		for i=1, numEntries do
 			QuestLogTitel,QuestLogTitelLevel,questTag = GetQuestLogTitle(i)
 			if (questTag ~= NIL) then
@@ -1883,8 +1883,15 @@ function storyline:GetObjectiveText()
 				QuestID = i
 			end
 		end
+	end--]]
+	
+	for i=1, numEntries do
+		QuestLogTitel = GetQuestLogTitle(i)
+		if string.find(QuestTitel, QuestLogTitel) then -- find doesnt accept functions as arguments
+			QuestID = i
+		end
 	end
-
+	
 	if QuestID > 0 then
 		QuestLog_SetSelection(QuestID)
 		_,ObjectiveText = GetQuestLogQuestText()
