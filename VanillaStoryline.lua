@@ -2310,7 +2310,8 @@ storyline.Area = {}
 	storyline.Area["Redridge Mountains"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\RedridgeMountains"}
 	storyline.Area["Stonetalon Mountains"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Stonetalon Mountains"}
 	storyline.Area["Ashenvale"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Ashenvale"}
-	storyline.Area["Duskwood"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Duskwood"}	
+	storyline.Area["Duskwood"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Duskwood"}
+	storyline.Area["Hillsbrad Foothills"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\HillsbradFoothills"}
 	storyline.Area["Wetlands"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Wetlands"}	
 	storyline.Area["Thousand Needles"]={[1]="Interface\\Glues\\Credits\\ThousandNeedles1",
 								[2]="Interface\\Glues\\Credits\\ThousandNeedles2",
