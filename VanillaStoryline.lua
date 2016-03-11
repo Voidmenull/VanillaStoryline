@@ -2175,7 +2175,7 @@ function storyline:UpdateModels()
 	if UnitExists("target") then storyline.NPC.PlayerFrame:SetUnit("target")
 	else storyline.NPC.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2"); storyline.NPC.PlayerFrame:SetModelScale(2) end
 	
-	storyline.Player.PlayerFrame:RefreshUnit()
+	storyline.Player.PlayerFrame:SetUnit("player")
 
 	-- Model scale Fixes for uncommon creatures
 	local model = storyline.NPC.PlayerFrame:GetModel()
