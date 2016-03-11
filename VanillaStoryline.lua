@@ -2357,12 +2357,7 @@ storyline.Area = {}
 								[5]="Interface\\Glues\\Credits\\BlastedLands5",
 								[6]="Interface\\Glues\\Credits\\BlastedLands6"}
 	storyline.Area["Un'goro Crater"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\UngoroCrater"}
-	storyline.Area["Felwood"]={[1]="Interface\\Glues\\Credits\\Fellwood1",
-								[2]="Interface\\Glues\\Credits\\Fellwood2",
-								[3]="Interface\\Glues\\Credits\\Fellwood3",
-								[4]="Interface\\Glues\\Credits\\Fellwood4",
-								[5]="Interface\\Glues\\Credits\\Fellwood5",
-								[6]="Interface\\Glues\\Credits\\Fellwood6"}	
+	storyline.Area["Felwood"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Felwood"}	
 	storyline.Area["Burning Steppes"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\BurningSteppes"}	
 	storyline.Area["Western Plaguelands"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\WesternPlaguelands"}	
 	storyline.Area["Deadwind Pass"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\DeadwindPass"}
