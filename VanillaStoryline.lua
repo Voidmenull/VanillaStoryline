@@ -36,7 +36,7 @@ storyline.Options.GradientLength = 30
 storyline.Options.Offset = 0 -- text offset for max. scroll frame
 storyline.Options.Delay = 0.03 -- 30 fps update
 storyline.Options.DelayModel = 1
-storyline.Options.Version = "0.2.3" -- version
+storyline.Options.Version = "0.3.0" -- version
 
 storyline.Variables.fadingProgress = 0
 storyline.Variables.ModelProgress = 0
@@ -49,6 +49,9 @@ storyline.Variables.ModelTime = 0
 storyline.Variables.Time = 0
 storyline.Variables.i = 0
 storyline.Variables.t = GetTime()
+
+-- Localisation
+local V = StorylineTrans
 
 -- Event Function
 function storyline:OnEvent()
@@ -76,15 +79,19 @@ function storyline:OnEvent()
 	--	storyline.NPC.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2") -- modelfix: set random model first, so GetModel will be avalible for "target" later
 
 	elseif event == "QUEST_DETAIL" then
+		storyline:UpdateZone()
 		storyline:HideBlizzard()
 		storyline:AcceptQuest()
 	elseif event == "QUEST_PROGRESS" then
+		storyline:UpdateZone()
 		storyline:HideBlizzard()
 		storyline:ProgressQuest()
 	elseif event == "QUEST_COMPLETE" then
+		storyline:UpdateZone()
 		storyline:HideBlizzard()
 		storyline:CompleteQuest()
 	elseif event == "QUEST_GREETING" then
+		storyline:UpdateZone()
 		storyline.Variables.GreetingsFlag = 1
 		storyline:HideBlizzard()
 		storyline:GossipStart()
@@ -95,6 +102,7 @@ function storyline:OnEvent()
 		DeclineQuest()
 		storyline.Background:Hide()
 	elseif event == "GOSSIP_SHOW" then
+		storyline:UpdateZone()
 		storyline.Variables.GreetingsFlag = 0
 		storyline:HideBlizzard()
 		storyline:GossipStart()
@@ -178,24 +186,125 @@ function storyline.Background:ConfigureFrame()
 	self:RegisterForDrag("LeftButton")
 	self:SetScript("OnDragStart", storyline.Options.StartMoving)
 	self:SetScript("OnDragStop", storyline.Options.StopMovingOrSizing)
-
+	
 	-- Layer 2
 	self.layer2 = CreateFrame("Frame",nil,self)
 	self.layer2:SetFrameStrata("BACKGROUND")
 	self.layer2:SetWidth(700)
 	self.layer2:SetHeight(450)
 	self.layer2:SetPoint("TOPLEFT",0,0)
-
+	
 	self.layer2.Background = CreateFrame("Frame",nil,self.layer2)
 	self.layer2.Background:SetFrameStrata("BACKGROUND")
 	self.layer2.Background:SetWidth(700)
 	self.layer2.Background:SetHeight(450)
 	self.layer2.Background:SetPoint("TOPLEFT", 20,-20)
 	self.layer2.Background:SetPoint("BOTTOMRIGHT", -20,20)
-	local Background = self.layer2.Background:CreateTexture()
-		Background:SetAllPoints()
-		Background:SetTexture("Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\DressUpBackground-NightElf1")
-		--Background:SetGradient("HORIZONTAL", 0, 0, 0 ,0.5, 0.5, 0.5)
+	local backdrop = {bgFile = "Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\question-background"} 
+	self.layer2.Background:SetBackdrop(backdrop)
+	self.layer2.Background:SetBackdropColor(1,1,1,1)
+	
+	-- background for 6-picture systems
+	self.layer2.Background[1] = CreateFrame("Frame",nil,self.layer2)
+	self.layer2.Background[1]:SetFrameStrata("BACKGROUND")
+	self.layer2.Background[1]:SetWidth(220)
+	self.layer2.Background[1]:SetHeight(205)
+	self.layer2.Background[1]:SetPoint("TOPLEFT",20,-20)
+	self.layer2.Background[1].Bg = self.layer2.Background[1]:CreateTexture()
+	self.layer2.Background[1].Bg:SetAllPoints()
+	self.layer2.Background[1].Bg:SetTexture("")
+	
+	self.layer2.Background[2] = CreateFrame("Frame",nil,self.layer2)
+	self.layer2.Background[2]:SetFrameStrata("BACKGROUND")
+	self.layer2.Background[2]:SetWidth(220)
+	self.layer2.Background[2]:SetHeight(205)
+	self.layer2.Background[2]:SetPoint("TOP", 0,-20)
+	self.layer2.Background[2].Bg = self.layer2.Background[2]:CreateTexture()
+	self.layer2.Background[2].Bg:SetAllPoints()
+	self.layer2.Background[2].Bg:SetTexture("")
+	
+	self.layer2.Background[3] = CreateFrame("Frame",nil,self.layer2)
+	self.layer2.Background[3]:SetFrameStrata("BACKGROUND")
+	self.layer2.Background[3]:SetWidth(220)
+	self.layer2.Background[3]:SetHeight(205)
+	self.layer2.Background[3]:SetPoint("TOPRIGHT", -20,-20)
+	self.layer2.Background[3].Bg = self.layer2.Background[3]:CreateTexture()
+	self.layer2.Background[3].Bg:SetAllPoints()
+	self.layer2.Background[3].Bg:SetTexture("")
+	
+	self.layer2.Background[4] = CreateFrame("Frame",nil,self.layer2)
+	self.layer2.Background[4]:SetFrameStrata("BACKGROUND")
+	self.layer2.Background[4]:SetWidth(220)
+	self.layer2.Background[4]:SetHeight(205)
+	self.layer2.Background[4]:SetPoint("BOTTOMLEFT", 20,20)
+	self.layer2.Background[4].Bg = self.layer2.Background[4]:CreateTexture()
+	self.layer2.Background[4].Bg:SetAllPoints()
+	self.layer2.Background[4].Bg:SetTexture("")
+	
+	self.layer2.Background[5] = CreateFrame("Frame",nil,self.layer2)
+	self.layer2.Background[5]:SetFrameStrata("BACKGROUND")
+	self.layer2.Background[5]:SetWidth(220)
+	self.layer2.Background[5]:SetHeight(205)
+	self.layer2.Background[5]:SetPoint("BOTTOM", 0,20)
+	self.layer2.Background[5].Bg = self.layer2.Background[5]:CreateTexture()
+	self.layer2.Background[5].Bg:SetAllPoints()
+	self.layer2.Background[5].Bg:SetTexture("")
+	
+	self.layer2.Background[6] = CreateFrame("Frame",nil,self.layer2)
+	self.layer2.Background[6]:SetFrameStrata("BACKGROUND")
+	self.layer2.Background[6]:SetWidth(220)
+	self.layer2.Background[6]:SetHeight(205)
+	self.layer2.Background[6]:SetPoint("BOTTOMRIGHT", -20,20)
+	self.layer2.Background[6].Bg = self.layer2.Background[6]:CreateTexture()
+	self.layer2.Background[6].Bg:SetAllPoints()
+	self.layer2.Background[6].Bg:SetTexture("")
+	
+	-- Backgrounds for 4-picture system
+	self.layer2.Background[7] = CreateFrame("Frame",nil,self.layer2)
+	self.layer2.Background[7]:SetFrameStrata("BACKGROUND")
+	self.layer2.Background[7]:SetWidth(330)
+	self.layer2.Background[7]:SetHeight(205)
+	self.layer2.Background[7]:SetPoint("TOPLEFT", 20,-20)
+	self.layer2.Background[7].Bg = self.layer2.Background[7]:CreateTexture()
+	self.layer2.Background[7].Bg:SetAllPoints()
+	self.layer2.Background[7].Bg:SetTexture("")
+
+	self.layer2.Background[8] = CreateFrame("Frame",nil,self.layer2)
+	self.layer2.Background[8]:SetFrameStrata("BACKGROUND")
+	self.layer2.Background[8]:SetWidth(330)
+	self.layer2.Background[8]:SetHeight(205)
+	self.layer2.Background[8]:SetPoint("TOPRIGHT", -20,-20)
+	self.layer2.Background[8].Bg = self.layer2.Background[8]:CreateTexture()
+	self.layer2.Background[8].Bg:SetAllPoints()
+	self.layer2.Background[8].Bg:SetTexture("")
+	
+	self.layer2.Background[9] = CreateFrame("Frame",nil,self.layer2)
+	self.layer2.Background[9]:SetFrameStrata("BACKGROUND")
+	self.layer2.Background[9]:SetWidth(330)
+	self.layer2.Background[9]:SetHeight(205)
+	self.layer2.Background[9]:SetPoint("BOTTOMLEFT", 20,20)
+	self.layer2.Background[9].Bg = self.layer2.Background[9]:CreateTexture()
+	self.layer2.Background[9].Bg:SetAllPoints()
+	self.layer2.Background[9].Bg:SetTexture("")
+	
+	self.layer2.Background[10] = CreateFrame("Frame",nil,self.layer2)
+	self.layer2.Background[10]:SetFrameStrata("BACKGROUND")
+	self.layer2.Background[10]:SetWidth(330)
+	self.layer2.Background[10]:SetHeight(205)
+	self.layer2.Background[10]:SetPoint("BOTTOMRIGHT", -20,20)
+	self.layer2.Background[10].Bg = self.layer2.Background[10]:CreateTexture()
+	self.layer2.Background[10].Bg:SetAllPoints()
+	self.layer2.Background[10].Bg:SetTexture("")
+	
+	-- 1-picture system
+	self.layer2.Background[11] = CreateFrame("Frame",nil,self.layer2)
+	self.layer2.Background[11]:SetFrameStrata("BACKGROUND")
+	self.layer2.Background[11]:SetWidth(660)
+	self.layer2.Background[11]:SetHeight(410)
+	self.layer2.Background[11]:SetPoint("CENTER", 0,0)
+	self.layer2.Background[11].Bg = self.layer2.Background[11]:CreateTexture()
+	self.layer2.Background[11].Bg:SetAllPoints()
+	self.layer2.Background[11].Bg:SetTexture("")
 
 	-- Layer 3
 	self.layer3 = CreateFrame("Frame",nil,self.layer2)
@@ -220,7 +329,7 @@ function storyline.Background:ConfigureFrame()
 	self.layer3.Background:SetWidth(700) -- Set these to whatever height/width is needed
 	self.layer3.Background:SetHeight(450) -- for your Texture
 	self.layer3.Background:SetBackdrop(backdrop)
-	self.layer3.Background:SetBackdropColor(1,1,1,0.5)
+	self.layer3.Background:SetBackdropColor(1,1,1,0.35)
 	self.layer3.Background:SetPoint("TOPLEFT", 20,-20)
 	self.layer3.Background:SetPoint("BOTTOMRIGHT", -20,20)
 
@@ -2161,3 +2270,138 @@ function storyline:QuestReward_OnClick()
 		QuestFrameRewardPanel.itemChoice = this:GetID();
 	end
 end
+
+function storyline:UpdateZone()
+	local zoneName = V[GetZoneText()]
+	-- clear textures
+	for i=1,11 do
+		if self.Background.layer2.Background[i] then self.Background.layer2.Background[i].Bg:SetTexture(storyline.Area["Clear"][i]) end
+	end
+	
+	-- Set new Textures
+	if storyline.Area[zoneName] then
+		for i=1,11 do
+			if storyline.Area[zoneName][i] then self.Background.layer2.Background[i].Bg:SetTexture(storyline.Area[zoneName][i]) end
+		end
+	else -- standard picture
+		for i=1,6 do
+			self.Background.layer2.Background[i].Bg:SetTexture(storyline.Area["Standard"][i])
+		end
+	end
+end
+
+-- possible Areas and their textures
+storyline.Area = {}
+	storyline.Area["Dun Morogh"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\DunMorogh"}
+	storyline.Area["Durotar"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Durotar"}
+	storyline.Area["Elwynn Forest"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\ElwynnForest"}
+	storyline.Area["Mulgore"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Muldore"}	
+	storyline.Area["Teldrassil"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Teldrassil"}
+	storyline.Area["Tirisfal Glades"]={[1]="Interface\\Glues\\Credits\\TirisfallGlades1",
+								[2]="Interface\\Glues\\Credits\\TirisfallGlades2",
+								[3]="Interface\\Glues\\Credits\\TirisfallGlades3",
+								[4]="Interface\\Glues\\Credits\\TirisfallGlades4",
+								[5]="Interface\\Glues\\Credits\\TirisfallGlades5",
+								[6]="Interface\\Glues\\Credits\\TirisfallGlades6"}
+	storyline.Area["Loch Modan"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\LochModan"}
+	storyline.Area["Silverpine Forest"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\SilverpineForest"}	
+	storyline.Area["Westfall"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Westfall"}
+	storyline.Area["The Barrens"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\TheBarrens"}
+	storyline.Area["Redridge Mountains"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\RedridgeMountains"}
+	storyline.Area["Stonetalon Mountains"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Stonetalon Mountains"}
+	storyline.Area["Ashenvale"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Ashenvale"}
+	storyline.Area["Duskwood"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Duskwood"}	
+	storyline.Area["Wetlands"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Wetlands"}	
+	storyline.Area["Thousand Needles"]={[1]="Interface\\Glues\\Credits\\ThousandNeedles1",
+								[2]="Interface\\Glues\\Credits\\ThousandNeedles2",
+								[3]="Interface\\Glues\\Credits\\ThousandNeedles3",
+								[4]="Interface\\Glues\\Credits\\ThousandNeedles4",
+								[5]="Interface\\Glues\\Credits\\ThousandNeedles5",
+								[6]="Interface\\Glues\\Credits\\ThousandNeedles6"}
+	storyline.Area["Alterac Mountains"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\AlteracMountains"}
+	storyline.Area["Arathi Highlands"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\ArathiHighlands"}
+	storyline.Area["Desolace"]={[1]="Interface\\Glues\\Credits\\SouthernDesolace1",
+								[2]="Interface\\Glues\\Credits\\SouthernDesolace2",
+								[3]="Interface\\Glues\\Credits\\SouthernDesolace3",
+								[4]="Interface\\Glues\\Credits\\SouthernDesolace4",
+								[5]="Interface\\Glues\\Credits\\SouthernDesolace5",
+								[6]="Interface\\Glues\\Credits\\SouthernDesolace6"}	
+	storyline.Area["Stranglethorn Vale"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\StranglethornVale"}
+	storyline.Area["Dustwallow Marsh"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\DustwallowMarsh"}	
+	storyline.Area["Badlands"]={[1]="Interface\\Glues\\Credits\\Badlands1",
+								[2]="Interface\\Glues\\Credits\\Badlands2",
+								[3]="Interface\\Glues\\Credits\\Badlands3",
+								[4]="Interface\\Glues\\Credits\\Badlands4",
+								[5]="Interface\\Glues\\Credits\\Badlands5",
+								[6]="Interface\\Glues\\Credits\\Badlands6"}
+	storyline.Area["Swamp of Sorrows"]={[1]="Interface\\Glues\\Credits\SwampofSorrows1",
+								[2]="Interface\\Glues\\Credits\SwampofSorrows2",
+								[3]="Interface\\Glues\\Credits\SwampofSorrows3",
+								[4]="Interface\\Glues\\Credits\SwampofSorrows4",
+								[5]="Interface\\Glues\\Credits\SwampofSorrows5",
+								[6]="Interface\\Glues\\Credits\SwampofSorrows6"}
+	storyline.Area["Feralas"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Feralas"}
+	storyline.Area["The Hinterlands"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\TheHinterlands"}	
+	storyline.Area["Tanaris"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Tanaris"}	
+	storyline.Area["Searing Gorge"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\SearingGorge"}	
+	storyline.Area["Azshara"]={[1]="Interface\\Glues\\Credits\\Ocean1",
+								[2]="Interface\\Glues\\Credits\\Ocean2",
+								[3]="Interface\\Glues\\Credits\\Ocean3",
+								[4]="Interface\\Glues\\Credits\\Ocean4",
+								[5]="Interface\\Glues\\Credits\\Ocean5",
+								[6]="Interface\\Glues\\Credits\\Ocean6"}
+	storyline.Area["Blasted Lands"]={[1]="Interface\\Glues\\Credits\\BlastedLands1",
+								[2]="Interface\\Glues\\Credits\\BlastedLands2",
+								[3]="Interface\\Glues\\Credits\\BlastedLands3",
+								[4]="Interface\\Glues\\Credits\\BlastedLands4",
+								[5]="Interface\\Glues\\Credits\\BlastedLands5",
+								[6]="Interface\\Glues\\Credits\\BlastedLands6"}
+	storyline.Area["Un'goro Crater"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\UngoroCrater"}
+	storyline.Area["Felwood"]={[1]="Interface\\Glues\\Credits\\Fellwood1",
+								[2]="Interface\\Glues\\Credits\\Fellwood2",
+								[3]="Interface\\Glues\\Credits\\Fellwood3",
+								[4]="Interface\\Glues\\Credits\\Fellwood4",
+								[5]="Interface\\Glues\\Credits\\Fellwood5",
+								[6]="Interface\\Glues\\Credits\\Fellwood6"}	
+	storyline.Area["Burning Steppes"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\BurningSteppes"}	
+	storyline.Area["Western Plaguelands"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\WesternPlaguelands"}	
+	storyline.Area["Deadwind Pass"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\DeadwindPass"}
+	storyline.Area["Eastern Plaguelands"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\EasternPlaguelands"}
+	storyline.Area["Winterspring"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Winterspring"}
+	storyline.Area["Moonglade"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Moonglade"}	
+	storyline.Area["Silithus"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Silithus"}	
+	storyline.Area["Darnassus"]={[1]="Interface\\Glues\\Credits\\Darnasis1",
+								[2]="Interface\\Glues\\Credits\\Darnasis2",
+								[3]="Interface\\Glues\\Credits\\Darnasis3",
+								[4]="Interface\\Glues\\Credits\\Darnasis4",
+								[5]="Interface\\Glues\\Credits\\Darnasis5",
+								[6]="Interface\\Glues\\Credits\\Darnasis6"}
+	storyline.Area["Ironforge"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Ironforge"}	
+	storyline.Area["Orgrimmar"]={[1]="Interface\\Glues\\Credits\\Orccamp1",
+								[2]="Interface\\Glues\\Credits\\Orccamp2",
+								[3]="Interface\\Glues\\Credits\\Orccamp3",
+								[4]="Interface\\Glues\\Credits\\Orccamp4",
+								[5]="Interface\\Glues\\Credits\\Orccamp5",
+								[6]="Interface\\Glues\\Credits\\Orccamp6"}
+	storyline.Area["Stormwind City"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\StormwindCity"}	
+	storyline.Area["Thunder Bluff"]={[1]="Interface\\Glues\\Credits\\ThunderBluff1",
+								[2]="Interface\\Glues\\Credits\\ThunderBluff2",
+								[3]="Interface\\Glues\\Credits\\ThunderBluff3",
+								[4]="Interface\\Glues\\Credits\\ThunderBluff4",
+								[5]="Interface\\Glues\\Credits\\ThunderBluff5",
+								[6]="Interface\\Glues\\Credits\\ThunderBluff6"}
+	storyline.Area["Undercity"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Undercity"}
+							
+	storyline.Area["Standard"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Standard"}
+	storyline.Area["Clear"]={[1]="",
+								[2]="",
+								[3]="",
+								[4]="",
+								[5]="",
+								[6]="",
+								[7]="",
+								[8]="",
+								[9]="",
+								[10]="",
+								[11]=""}
+								

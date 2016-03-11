@@ -1,10 +1,11 @@
 ## Interface: 11200
 ## Title: VanillaStoryline
 ## Author: |cffABD473Random @ nostalrius.org
-## Version: 0.1
+## Version: 0.3.0
 ## Notes: VanillaStoryline - by |cff00FF00Renew |r@ nostalrius.org
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
 ## SavedVariables: StorylineOptions
 
+Assets\Localisation.lua
 VanillaStoryline.lua
