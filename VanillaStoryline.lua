@@ -554,7 +554,7 @@ function storyline.Gossip:ConfigureFrame()
 		self.Frame.Scrollframe:SetScrollChild(self.Frame.Scrollframe.Content)
 
 
-	-- Greate 32 Buttons
+	-- Create 32 Buttons
 	self.Frame.Scrollframe.Content.Block = {}
 	for i=1,32 do
 		local counter = i
@@ -585,7 +585,7 @@ function storyline.Gossip:ConfigureFrame()
 			self.Frame.Scrollframe.Content.Block[i].Font = self.Frame.Scrollframe.Content.Block[i]:CreateFontString(nil, "OVERLAY")
 					self.Frame.Scrollframe.Content.Block[i].Font:SetPoint("LEFT", 20, 0)
 					self.Frame.Scrollframe.Content.Block[i].Font:SetFont("Fonts\\FRIZQT__.TTF", 12)
-					self.Frame.Scrollframe.Content.Block[i].Font:SetWidth(240)
+					self.Frame.Scrollframe.Content.Block[i].Font:SetWidth(255)
 					self.Frame.Scrollframe.Content.Block[i].Font:SetHeight(16)
 					self.Frame.Scrollframe.Content.Block[i].Font:SetJustifyH("LEFT")
 					self.Frame.Scrollframe.Content.Block[i].Font:SetJustifyV("CENTER")
@@ -2186,6 +2186,7 @@ function storyline:UpdateModels()
 	elseif string.find(model,"GoblinFemale") then storyline.NPC.PlayerFrame:SetModelScale(0.7)
 	elseif string.find(model,"GoblinMale") then storyline.NPC.PlayerFrame:SetModelScale(0.7)
 	elseif string.find(model,"LostOne") then storyline.NPC.PlayerFrame:SetPosition(1.3,-0.5,1.1)
+	elseif string.find(model,"Ghost") then storyline.NPC.PlayerFrame:SetPosition(1,0,1.7)
 	end
 end
 
