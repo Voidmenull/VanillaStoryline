@@ -36,7 +36,7 @@ storyline.Options.GradientLength = 30
 storyline.Options.Offset = 0 -- text offset for max. scroll frame
 storyline.Options.Delay = 0.03 -- 30 fps update
 storyline.Options.DelayModel = 1
-storyline.Options.Version = "0.3.0" -- version
+storyline.Options.Version = "0.4.0" -- version
 
 storyline.Variables.fadingProgress = 0
 storyline.Variables.ModelProgress = 0
@@ -55,30 +55,7 @@ local V = StorylineTrans
 
 -- Event Function
 function storyline:OnEvent()
-	if event == "ADDON_LOADED" and arg1 == "VanillaStoryline" then
-		-- set Options
-		if not StorylineOptions then
-			StorylineOptions = {}
-			StorylineOptions.HideBlizzardFrames = 1
-			StorylineOptions.TextSpeed = 2
-		end
-		storyline.Options.TextSpeed = StorylineOptions.TextSpeed
-		storyline.Options.HideBlizzardFrames = StorylineOptions.HideBlizzardFrames
-
-		-- Greate UI
-		storyline.Background:ConfigureFrame() -- configure Background Frame
-		storyline.Player:ConfigureFrame() -- configure player 3d Frame
-		storyline.NPC:ConfigureFrame() -- configure the NPC 3d frame
-		storyline.Text:ConfigureFrame() -- configure fonts
-		storyline.Gossip:ConfigureFrame() -- configure Gossip Frame
-		storyline.QuestDetail:ConfigureFrame() -- configure Quest Detail Frame
-		storyline.QuestProgress:ConfigureFrame() -- configure Quest Progress Frame
-		storyline.QuestComplete:ConfigureFrame() -- configure Quest complete frame
-    storyline.OptionsFrame:ConfigureFrame() -- configure Options Frame
-		storyline.Background:Hide()
-	--	storyline.NPC.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2") -- modelfix: set random model first, so GetModel will be avalible for "target" later
-
-	elseif event == "QUEST_DETAIL" then
+	if event == "QUEST_DETAIL" then
 		storyline:UpdateZone()
 		storyline:HideBlizzard()
 		storyline:AcceptQuest()
@@ -97,6 +74,7 @@ function storyline:OnEvent()
 		storyline:GossipStart()
 	elseif event == "QUEST_FINISHED" then
 		DeclineQuest()
+		storyline:ResetModels()
 		storyline.Background:Hide()
 	elseif event == "QUEST_ITEM_UPDATE" then -- no update impleted - reload frame instead
 		DeclineQuest()
@@ -107,7 +85,31 @@ function storyline:OnEvent()
 		storyline:HideBlizzard()
 		storyline:GossipStart()
 	elseif event == "GOSSIP_CLOSED" then
+		storyline:ResetModels()
 		storyline.Background:Hide()
+		
+	elseif event == "ADDON_LOADED" and arg1 == "VanillaStoryline" then
+		-- set Options
+		if not StorylineOptions then
+			StorylineOptions = {}
+			StorylineOptions.HideBlizzardFrames = 1
+			StorylineOptions.TextSpeed = 2
+		end
+		storyline.Options.TextSpeed = StorylineOptions.TextSpeed
+		storyline.Options.HideBlizzardFrames = StorylineOptions.HideBlizzardFrames
+
+		-- Greate UI
+		storyline.Background:ConfigureFrame() -- configure Background Frame
+		storyline.Player:ConfigureFrame() -- configure player 3d Frame
+		storyline.NPC:ConfigureFrame() -- configure the NPC 3d frame
+		storyline.Text:ConfigureFrame() -- configure fonts
+		storyline.Gossip:ConfigureFrame() -- configure Gossip Frame
+		storyline.QuestDetail:ConfigureFrame() -- configure Quest Detail Frame
+		storyline.QuestProgress:ConfigureFrame() -- configure Quest Progress Frame
+		storyline.QuestComplete:ConfigureFrame() -- configure Quest complete frame
+		storyline.OptionsFrame:ConfigureFrame() -- configure Options Frame
+		storyline.Background:Hide()
+	
 	end
 
 end
@@ -150,7 +152,7 @@ function storyline:OnUpdate()
 end
 
 storyline:SetScript("OnEvent", storyline.OnEvent)
-storyline:SetScript("OnUpdate", storyline.OnUpdate)
+storyline.Background:SetScript("OnUpdate", storyline.OnUpdate)
 
 	-- moving frames function
 function storyline.Options:StartMoving()
@@ -608,9 +610,6 @@ function storyline:GossipStart()
 	storyline.Text.Questtext.Continue:Hide()
 	storyline.Text.Questtext.Complete:Hide()
 
-	-- Update PlayerFrames
-	storyline:UpdateModels()
-
 	-- Set GossipText
 	local GossipText = ""
 	if storyline.Variables.GreetingsFlag == 1 then GossipText =  GetGreetingText()
@@ -627,6 +626,9 @@ function storyline:GossipStart()
 
 	-- show
 	storyline.Background:Show()
+	
+	-- Update PlayerFrames
+	storyline:UpdateModels()
 end
 
 function storyline:updateGossip()
@@ -1743,7 +1745,12 @@ function storyline.NPC:ConfigureFrame()
 		self.PlayerFrame:SetPoint("TOP",self.Background)
 		self.PlayerFrame:SetWidth(300)
 		self.PlayerFrame:SetHeight(400)
-		self.PlayerFrame:SetUnit("target")
+		--self.PlayerFrame:SetUnit("target")
+		self.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2") -- modelfix: set random model first, so GetModel will be avalible for "target" later
+		self.PlayerFrame:SetFacing(-0.8)
+		
+		self.PlayerFrame:SetModelScale(1)
+		self.PlayerFrame:SetPosition(1,0,0)
 		self.PlayerFrame:SetFacing(-0.8)
 
 end
@@ -1826,9 +1833,6 @@ function storyline:AcceptQuest()
 	-- play sound
 	PlaySound("WriteQuest")
 
-	-- Update PlayerFrames
-	storyline:UpdateModels()
-
 	-- Set Questtext
 	local QuestText = GetQuestText()
 	storyline:ShowNPCText(QuestText)
@@ -1840,6 +1844,9 @@ function storyline:AcceptQuest()
 
 	-- show
 	storyline.Background:Show()
+	
+	-- Update PlayerFrames
+	storyline:UpdateModels()
 
 end
 
@@ -1877,9 +1884,6 @@ function storyline:ProgressQuest()
 	storyline.Text.Questtext.Continue:Show()
 	storyline.Text.Questtext.Complete:Hide()
 
-	-- Update PlayerFrames
-	storyline:UpdateModels()
-
 	--Update Text
 	storyline.Text.NPCName:SetText(UnitName("target"))
 	local QuestTitel = GetTitleText()
@@ -1897,6 +1901,9 @@ function storyline:ProgressQuest()
 
 	-- show
 	storyline.Background:Show()
+	
+	-- Update PlayerFrames
+	storyline:UpdateModels()
 end
 
 function storyline:ProgressQuestObjectives()
@@ -1950,9 +1957,6 @@ function storyline:CompleteQuest()
 	storyline.Text.Questtext.Continue:Hide()
 	storyline.Text.Questtext.Complete:Show()
 
-	-- Update PlayerFrames
-	storyline:UpdateModels()
-
 	--Update Text
 	storyline.Text.NPCName:SetText(UnitName("target"))
 	local QuestTitel = GetTitleText()
@@ -1964,6 +1968,9 @@ function storyline:CompleteQuest()
 
 	-- show
 	storyline.Background:Show()
+	
+	-- Update PlayerFrames
+	storyline:UpdateModels()
 end
 
 -- Get Objective Text from QuestLog : Devlivers Objective Text from quest
@@ -2164,15 +2171,29 @@ end
 
 -- Update 3D Models
 function storyline:UpdateModels()
+	
 	if UnitExists("target") then storyline.NPC.PlayerFrame:SetUnit("target")
 	else storyline.NPC.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2"); storyline.NPC.PlayerFrame:SetModelScale(2) end
-	storyline.Player.PlayerFrame:SetUnit("player")
+	
+	storyline.Player.PlayerFrame:RefreshUnit()
 
-	-- Model scale Fixes for uncommon creatures -- later DOTO
-	--local model = storyline.NPC.PlayerFrame:GetModel()
+	-- Model scale Fixes for uncommon creatures
+	local model = storyline.NPC.PlayerFrame:GetModel()
 	--print(model)
-	--if model == "Creature\HighElf\HighElfMale_Hunter" then storyline.NPC.PlayerFrame:SetPosition(-4.5,4,1); storyline.NPC.PlayerFrame:SetRotation(-1.2); print("modelin")
---	end
+	
+	if string.find(model,"HighElfMale_Hunter") then storyline.NPC.PlayerFrame:SetFacing(-1.2); storyline.NPC.PlayerFrame:SetPosition(-1.4,2,0.6)
+	elseif string.find(model,"HighElfFemale_Mage") then storyline.NPC.PlayerFrame:SetPosition(-0.1,0.2,0)
+	elseif string.find(model,"GoblinFemale") then storyline.NPC.PlayerFrame:SetModelScale(0.7)
+	elseif string.find(model,"GoblinMale") then storyline.NPC.PlayerFrame:SetModelScale(0.7)
+	elseif string.find(model,"LostOne") then storyline.NPC.PlayerFrame:SetPosition(1.3,-0.5,1.1)
+	end
+end
+
+function storyline:ResetModels()
+	-- Reset Settings
+	storyline.NPC.PlayerFrame:SetModelScale(1)
+	storyline.NPC.PlayerFrame:SetPosition(1,0,0)
+	storyline.NPC.PlayerFrame:SetFacing(-0.8)
 end
 
 -- Fill the Scrollframe + Fade
@@ -2335,12 +2356,12 @@ storyline.Area = {}
 								[4]="Interface\\Glues\\Credits\\Badlands4",
 								[5]="Interface\\Glues\\Credits\\Badlands5",
 								[6]="Interface\\Glues\\Credits\\Badlands6"}
-	storyline.Area["Swamp of Sorrows"]={[1]="Interface\\Glues\\Credits\SwampofSorrows1",
-								[2]="Interface\\Glues\\Credits\SwampofSorrows2",
-								[3]="Interface\\Glues\\Credits\SwampofSorrows3",
-								[4]="Interface\\Glues\\Credits\SwampofSorrows4",
-								[5]="Interface\\Glues\\Credits\SwampofSorrows5",
-								[6]="Interface\\Glues\\Credits\SwampofSorrows6"}
+	storyline.Area["Swamp of Sorrows"]={[1]="Interface\\Glues\\Credits\\SwampofSorrows1",
+								[2]="Interface\\Glues\\Credits\\SwampofSorrows2",
+								[3]="Interface\\Glues\\Credits\\SwampofSorrows3",
+								[4]="Interface\\Glues\\Credits\\SwampofSorrows4",
+								[5]="Interface\\Glues\\Credits\\SwampofSorrows5",
+								[6]="Interface\\Glues\\Credits\\SwampofSorrows6"}
 	storyline.Area["Feralas"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Feralas"}
 	storyline.Area["The Hinterlands"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\TheHinterlands"}	
 	storyline.Area["Tanaris"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Tanaris"}	
