@@ -4,7 +4,7 @@ function print(content)
 end
 
 -- local later
-storyline = CreateFrame("Frame",nil); -- Event Frame
+local storyline = CreateFrame("Frame",nil); -- Event Frame
 	storyline.Background = CreateFrame("Frame","StorylineFrame",UIParent) -- Background Frame
 	storyline.Player = CreateFrame("Frame",nil,storyline.Background) -- Player Frame
 	storyline.NPC = CreateFrame("Frame",nil,storyline.Background) -- NPC Frame
@@ -36,7 +36,7 @@ storyline.Options.GradientLength = 30
 storyline.Options.Offset = 0 -- text offset for max. scroll frame
 storyline.Options.Delay = 0.03 -- 30 fps update
 storyline.Options.DelayModel = 1
-storyline.Options.Version = "0.5.0" -- version
+storyline.Options.Version = "0.5.1" -- version
 
 -- onupdate text
 storyline.Variables.fadingProgress = 0
@@ -2495,6 +2495,13 @@ end
 -- play greetings animation
 function storyline:GreetingsAnimation()
 	local emoteNum =  storyline.Animation.Greetings[math.random(getn(storyline.Animation.Greetings))] -- get a random animation
+	if storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()] and storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()][emoteNum] then
+		storyline:playNPCAnimation(emoteNum,storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()][emoteNum])
+	end
+end
+
+function storyline:GreetingsAnimationTest(num)
+	local emoteNum =  num
 	if storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()] and storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()][emoteNum] then
 		storyline:playNPCAnimation(emoteNum,storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()][emoteNum])
 	end
