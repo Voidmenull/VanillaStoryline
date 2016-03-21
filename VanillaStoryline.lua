@@ -4,7 +4,7 @@ function print(content)
 end
 
 -- local later
-local storyline = CreateFrame("Frame",nil); -- Event Frame
+storyline = CreateFrame("Frame",nil); -- Event Frame
 	storyline.Background = CreateFrame("Frame","StorylineFrame",UIParent) -- Background Frame
 	storyline.Player = CreateFrame("Frame",nil,storyline.Background) -- Player Frame
 	storyline.NPC = CreateFrame("Frame",nil,storyline.Background) -- NPC Frame
@@ -35,8 +35,8 @@ storyline.Options.Fading = 0
 storyline.Options.GradientLength = 30
 storyline.Options.Offset = 0 -- text offset for max. scroll frame
 storyline.Options.Delay = 0.03 -- 30 fps update
-storyline.Options.DelayModel = 1
-storyline.Options.Version = "0.5.1" -- version
+storyline.Options.FrameStrata = {[1]="BACKGROUND",[2]="LOW",[3]="MEDIUM",[4]="HIGH",[5]="DIALOG",[6]="FULLSCREEN",[7]="FULLSCREEN_DIALOG",[8]="TOOLTIP"}
+storyline.Options.Version = "0.5.2" -- version
 
 -- onupdate text
 storyline.Variables.fadingProgress = 0
@@ -98,11 +98,11 @@ function storyline:OnEvent()
 			StorylineOptions.HideBlizzardFrames = 1
 			StorylineOptions.TextSpeed = 2
 			StorylineOptions.WindowScale = 1
-			StorylineOptions.WindowLevel = "HIGH"
+			StorylineOptions.WindowLevel = 4
 		end
 		-- compability to old version
 		if not StorylineOptions.WindowScale then StorylineOptions.WindowScale = 1 end
-		if not StorylineOptions.WindowLevel then StorylineOptions.WindowLevel = "HIGH" end
+		if not StorylineOptions.WindowLevel then StorylineOptions.WindowLevel = 4 end
 		
 		storyline.Options.TextSpeed = StorylineOptions.TextSpeed
 		storyline.Options.WindowScale = StorylineOptions.WindowScale
@@ -119,6 +119,7 @@ function storyline:OnEvent()
 		storyline.QuestProgress:ConfigureFrame() -- configure Quest Progress Frame
 		storyline.QuestComplete:ConfigureFrame() -- configure Quest complete frame
 		storyline.OptionsFrame:ConfigureFrame() -- configure Options Frame
+		storyline:SetFrameStrata() -- set FrameStrata
 		storyline.Background:Hide()
 	
 	end
@@ -181,7 +182,7 @@ end
 -- Configure Background Frame
 function storyline.Background:ConfigureFrame()
 	-- Layer 1
-	self:SetFrameStrata(storyline.Options.WindowLevel)
+	self:SetFrameStrata("HIGH")
 	self:SetWidth(700)
 	self:SetHeight(450)
 	self:SetPoint("CENTER",0,0)
@@ -1679,10 +1680,10 @@ function storyline.OptionsFrame:ConfigureFrame()
 		 self.ScaleSlider:SetValue(storyline.Options.WindowScale*100)
 		 getglobal("StorylineScaleSlider" .. 'Low'):SetText("50%")
 		 getglobal("StorylineScaleSlider" .. 'High'):SetText("150%")
-		 getglobal("StorylineScaleSlider" .. 'Text'):SetText(storyline.Options.WindowScale*100)
+		 getglobal("StorylineScaleSlider" .. 'Text'):SetText(storyline.Options.WindowScale*100 .. " %")
 		 self.ScaleSlider:SetScript("OnValueChanged", function()
 			 										storyline.Options.WindowScale = storyline.OptionsFrame.ScaleSlider:GetValue()/100; StorylineOptions.WindowScale = storyline.Options.WindowScale
-	 												getglobal("StorylineScaleSlider" .. 'Text'):SetText(storyline.Options.WindowScale*100)
+	 												getglobal("StorylineScaleSlider" .. 'Text'):SetText(storyline.Options.WindowScale*100 .. " %")
 	 											end)
 		storyline.Background:SetScale(storyline.Options.WindowScale)
 		
@@ -1750,14 +1751,13 @@ function storyline.OptionsFrame:ConfigureFrame()
 		-- Frame Level
 		
 		local function configLevelDropdown()
-		storyline.Background:SetFrameStrata("HIGH")
 			local info = {}
 			
 			info.text = "Level 1"
 			info.func = function()
 				UIDropDownMenu_SetSelectedID(GlobalLevelDropDownID, this:GetID(), 0)
-				storyline.Background:SetFrameStrata("BACKGROUND")
-				StorylineOptions.WindowLevel = "BACKGROUND"
+				StorylineOptions.WindowLevel = 1
+				storyline:SetFrameStrata()
 			end
 			UIDropDownMenu_AddButton(info)
 			info.checked = false
@@ -1765,8 +1765,8 @@ function storyline.OptionsFrame:ConfigureFrame()
 			info.text = "Level 2"
 			info.func = function()
 				UIDropDownMenu_SetSelectedID(GlobalLevelDropDownID, this:GetID(), 0)
-				storyline.Background:SetFrameStrata("LOW")
-				StorylineOptions.WindowLevel = "LOW"
+				StorylineOptions.WindowLevel = 2
+				storyline:SetFrameStrata()
 			end
 			UIDropDownMenu_AddButton(info)
 			info.checked = false
@@ -1774,8 +1774,8 @@ function storyline.OptionsFrame:ConfigureFrame()
 			info.text = "Level 3"
 			info.func = function()
 				UIDropDownMenu_SetSelectedID(GlobalLevelDropDownID, this:GetID(), 0)
-				storyline.Background:SetFrameStrata("MEDIUM")
-				StorylineOptions.WindowLevel = "MEDIUM"
+				StorylineOptions.WindowLevel = 3
+				storyline:SetFrameStrata()
 			end
 			UIDropDownMenu_AddButton(info)
 			info.checked = false
@@ -1783,8 +1783,8 @@ function storyline.OptionsFrame:ConfigureFrame()
 			info.text = "Level 4"
 			info.func = function()
 				UIDropDownMenu_SetSelectedID(GlobalLevelDropDownID, this:GetID(), 0)
-				storyline.Background:SetFrameStrata("HIGH")
-				StorylineOptions.WindowLevel = "HIGH"
+				StorylineOptions.WindowLevel = 4
+				storyline:SetFrameStrata()
 			end
 			UIDropDownMenu_AddButton(info)
 			info.checked = false
@@ -1792,8 +1792,8 @@ function storyline.OptionsFrame:ConfigureFrame()
 			info.text = "Level 5"
 			info.func = function()
 				UIDropDownMenu_SetSelectedID(GlobalLevelDropDownID, this:GetID(), 0)
-				storyline.Background:SetFrameStrata("DIALOG")
-				StorylineOptions.WindowLevel = "DIALOG"
+				StorylineOptions.WindowLevel = 5
+				storyline:SetFrameStrata()
 			end
 			UIDropDownMenu_AddButton(info)
 			info.checked = false
@@ -1801,8 +1801,8 @@ function storyline.OptionsFrame:ConfigureFrame()
 			info.text = "Level 6"
 			info.func = function()
 				UIDropDownMenu_SetSelectedID(GlobalLevelDropDownID, this:GetID(), 0)
-				storyline.Background:SetFrameStrata("FULLSCREEN")
-				StorylineOptions.WindowLevel = "FULLSCREEN"
+				StorylineOptions.WindowLevel = 6
+				storyline:SetFrameStrata()
 			end
 			UIDropDownMenu_AddButton(info)
 			info.checked = false
@@ -1810,8 +1810,8 @@ function storyline.OptionsFrame:ConfigureFrame()
 			info.text = "Level 7"
 			info.func = function()
 				UIDropDownMenu_SetSelectedID(GlobalLevelDropDownID, this:GetID(), 0)
-				storyline.Background:SetFrameStrata("FULLSCREEN_DIALOG")
-				StorylineOptions.WindowLevel = "FULLSCREEN_DIALOG"
+				StorylineOptions.WindowLevel = 7
+				storyline:SetFrameStrata()
 			end
 			UIDropDownMenu_AddButton(info)
 			info.checked = false
@@ -1819,8 +1819,8 @@ function storyline.OptionsFrame:ConfigureFrame()
 			info.text = "Level 8"
 			info.func = function()
 				UIDropDownMenu_SetSelectedID(GlobalLevelDropDownID, this:GetID(), 0)
-				storyline.Background:SetFrameStrata("TOOLTIP")
-				StorylineOptions.WindowLevel = "TOOLTIP"
+				StorylineOptions.WindowLevel = 8
+				storyline:SetFrameStrata()
 			end
 			UIDropDownMenu_AddButton(info)
 			info.checked = false
@@ -1841,7 +1841,7 @@ function storyline.OptionsFrame:ConfigureFrame()
 								ToggleDropDownMenu(); -- inherit UIDropDownMenuTemplate functions
 								PlaySound("igMainMenuOptionCheckBoxOn"); -- inherit UIDropDownMenuTemplate functions
 								end)
-		getglobal(self.LevelDropdown:GetName().."Text"):SetText(storyline.Options.WindowLevel)
+		getglobal(self.LevelDropdown:GetName().."Text"):SetText("Level "..storyline.Options.WindowLevel)
 		
 		self.HideFont = self.LevelDropdown:CreateFontString(nil, "OVERLAY")
 				self.HideFont:SetPoint("TOP", -250, 20)
@@ -1864,7 +1864,6 @@ function storyline.OptionsFrame:ConfigureFrame()
 
 		 -- hide
 		 self:Hide()
-
 end
 
 function storyline.Player:ConfigureFrame()
@@ -2403,7 +2402,6 @@ end
 
 -- Hide Blizzards Frames
 function storyline:HideBlizzard()
-
 	if storyline.Options.HideBlizzardFrames == 1 then
 		-- Greetings Frames
 		QuestFrameGreetingPanel:Hide()
@@ -2470,6 +2468,10 @@ function storyline:UpdateZone()
 			self.Background.layer2.Background[i].Bg:SetTexture(storyline.Area["Standard"][i])
 		end
 	end
+end
+
+function storyline:SetFrameStrata()
+	storyline.Background:SetFrameStrata(storyline.Options.FrameStrata[StorylineOptions.WindowLevel])
 end
 
 -- Animation Functions --
