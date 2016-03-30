@@ -4,7 +4,7 @@ function print(content)
 end
 
 -- local later
-storyline = CreateFrame("Frame",nil); -- Event Frame
+local storyline = CreateFrame("Frame",nil); -- Event Frame
 	storyline.Background = CreateFrame("Frame","StorylineFrame",UIParent) -- Background Frame
 	storyline.Player = CreateFrame("Frame",nil,storyline.Background) -- Player Frame
 	storyline.NPC = CreateFrame("Frame",nil,storyline.Background) -- NPC Frame
@@ -36,7 +36,7 @@ storyline.Options.GradientLength = 30
 storyline.Options.Offset = 0 -- text offset for max. scroll frame
 storyline.Options.Delay = 0.03 -- 30 fps update
 storyline.Options.FrameStrata = {[1]="BACKGROUND",[2]="LOW",[3]="MEDIUM",[4]="HIGH",[5]="DIALOG",[6]="FULLSCREEN",[7]="FULLSCREEN_DIALOG",[8]="TOOLTIP"}
-storyline.Options.Version = "0.5.2" -- version
+storyline.Options.Version = "0.5.4" -- version
 
 -- onupdate text
 storyline.Variables.fadingProgress = 0
@@ -45,6 +45,8 @@ storyline.Variables.QuesttextLength = 0
 storyline.Variables.GreetingsFlag = 0
 storyline.Variables.LastTime = 0
 storyline.Variables.Time = 0
+storyline.Variables.FontSize = 14
+storyline.Variables.FontHeight = 0
 
 -- unopdate animations
 storyline.Animation = {}
@@ -99,10 +101,12 @@ function storyline:OnEvent()
 			StorylineOptions.TextSpeed = 2
 			StorylineOptions.WindowScale = 1
 			StorylineOptions.WindowLevel = 4
+			StorylineOptions.FontSize = 14
 		end
 		-- compability to old version
 		if not StorylineOptions.WindowScale then StorylineOptions.WindowScale = 1 end
 		if not StorylineOptions.WindowLevel then StorylineOptions.WindowLevel = 4 end
+		if not StorylineOptions.FontSize then StorylineOptions.FontSize = 14 end
 		
 		storyline.Options.TextSpeed = StorylineOptions.TextSpeed
 		storyline.Options.WindowScale = StorylineOptions.WindowScale
@@ -131,10 +135,10 @@ function storyline:OnUpdate()
 
 	-- this ticks every Delay in sec.!
 	if storyline.Options.Fading == 1 and storyline.Variables.LastTime + storyline.Options.Delay <= storyline.Variables.Time then
-
+	
 		-- Set Font Fading Progress
 		storyline.Variables.fadingProgress = storyline.Variables.fadingProgress + storyline.Options.TextSpeed
-		storyline.Variables.SliderProgress = storyline.Variables.SliderProgress + (storyline.Options.TextSpeed/4)
+		storyline.Variables.SliderProgress = storyline.Variables.SliderProgress + ((storyline.Variables.FontSize/14)*storyline.Options.TextSpeed/3)
 
 		-- set Slider Progression
 		storyline.Background.layer5.Questtext.Slider:SetValue(storyline.Variables.SliderProgress-50)
@@ -187,7 +191,6 @@ function storyline.Background:ConfigureFrame()
 	self:SetHeight(450)
 	self:SetPoint("CENTER",0,0)
 	self:SetMovable(1)
-	--self:EnableMouse(1)
 	self:RegisterForDrag("LeftButton")
 	self:SetScript("OnDragStart", storyline.Options.StartMoving)
 	self:SetScript("OnDragStop", storyline.Options.StopMovingOrSizing)
@@ -499,8 +502,7 @@ function storyline.Background:ConfigureFrame()
 		self.CloseButton:SetPushedTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Down")
 		self.CloseButton:SetHighlightTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight")
 		self.CloseButton:SetScript("OnClick",function() PlaySound("igMainMenuOptionCheckBoxOn")
-																						DeclineQuest(); PlaySound("igQuestCancel");storyline:HideAll(); storyline.Background:Hide()
-																						QuestFrame:Hide(); GossipFrame:Hide()
+																						DeclineQuest(); CloseGossip(); PlaySound("igQuestCancel");storyline:HideAll(); storyline.Background:Hide()
 																					end)
 
 	-- Options button
@@ -620,7 +622,7 @@ function storyline:GossipStart()
 	storyline:ShowNPCText(GossipText)
 
 	--Update Text
-	storyline.Text.NPCName:SetText(UnitName("target"))
+	storyline.Text.NPCName:SetText(UnitName("npc"))
 	local QuestTitel = ""
 	storyline.Text.Banner:SetText(QuestTitel)
 	
@@ -1638,7 +1640,7 @@ function storyline.OptionsFrame:ConfigureFrame()
    self:SetBackdrop(backdrop)
    self:SetBackdropColor(1,1,1,1)
 	 self:SetWidth(680)
- 	 self:SetHeight(100)
+ 	 self:SetHeight(150)
 	 self:SetPoint("BOTTOM",0,-(self:GetHeight()))
 
 		-- testspeed
@@ -1702,6 +1704,35 @@ function storyline.OptionsFrame:ConfigureFrame()
 		 self.ScaleFont:SetJustifyV("TOP")
 		 self.ScaleFont:SetText("Window Scale:")
 		 self.ScaleFont:SetTextColor(1,1,1)
+		 
+		 -- StorylineOptions.FontSize
+		 
+		  self.FontSizeSlider = CreateFrame("Slider","StorylineFontSizeSlider",self,"OptionsSliderTemplate")
+		 self.FontSizeSlider:SetPoint("TOPLEFT", 10, -110)
+     self.FontSizeSlider:SetWidth(132)
+		 self.FontSizeSlider:SetHeight(17)
+		 self.FontSizeSlider:SetOrientation("HORIZONTAL")
+		 self.FontSizeSlider:SetThumbTexture("Interface\\Buttons\\UI-SliderBar-Button-Horizontal")
+		 self.FontSizeSlider:SetMinMaxValues(10,20)
+		 self.FontSizeSlider:SetValueStep(1)
+		 self.FontSizeSlider:SetValue(StorylineOptions.FontSize)
+		 getglobal("StorylineFontSizeSlider" .. 'Low'):SetText("10")
+		 getglobal("StorylineFontSizeSlider" .. 'High'):SetText("20")
+		 getglobal("StorylineFontSizeSlider" .. 'Text'):SetText(StorylineOptions.FontSize)
+		 self.FontSizeSlider:SetScript("OnValueChanged", function()
+													StorylineOptions.FontSize = storyline.OptionsFrame.FontSizeSlider:GetValue()
+													storyline.Text.Questtext.Font:SetFont("Fonts\\FRIZQT__.TTF", StorylineOptions.FontSize)
+	 												getglobal("StorylineFontSizeSlider" .. 'Text'):SetText(StorylineOptions.FontSize)
+	 											end)
+												
+		self.FontSizeFont = self.FontSizeSlider:CreateFontString(nil, "OVERLAY")
+		 self.FontSizeFont:SetPoint("TOPLEFT", 0, 30)
+		 self.FontSizeFont:SetFont("Fonts\\FRIZQT__.TTF", 12)
+		 self.FontSizeFont:SetWidth(200)
+		 self.FontSizeFont:SetJustifyH("LEFT")
+		 self.FontSizeFont:SetJustifyV("TOP")
+		 self.FontSizeFont:SetText("Font Size:")
+		 self.FontSizeFont:SetTextColor(1,1,1)
 		 
 		-- move Frame
 		self.MoveButton = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
@@ -1899,7 +1930,7 @@ function storyline.NPC:ConfigureFrame()
 		self.PlayerFrame:SetWidth(300)
 		self.PlayerFrame:SetHeight(400)
 		--self.PlayerFrame:SetUnit("target")
-		self.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2") -- modelfix: set random model first, so GetModel will be avalible for "target" later
+		self.PlayerFrame:SetModel("Interface\\Buttons\\talktomequestionmark.mdx") -- modelfix: set random model first, so GetModel will be avalible for "target" later
 		self.PlayerFrame:SetFacing(-0.8)
 		
 		self.PlayerFrame:SetModelScale(1)
@@ -1913,10 +1944,10 @@ function storyline.Text:ConfigureFrame()
 	-- Banner Font
 	self.Banner = storyline.Background.layer4.Banner:CreateFontString(nil, "OVERLAY")
 		self.Banner:SetPoint("CENTER", 0, 5)
-		self.Banner:SetFont("Fonts\\FRIZQT__.TTF", 20)
-		self.Banner:SetWidth(280)
+		self.Banner:SetFont("Fonts\\FRIZQT__.TTF", 16)
+		self.Banner:SetWidth(260)
 		self.Banner:SetJustifyH("CENTER")
-		self.Banner:SetJustifyV("TOP")
+		self.Banner:SetJustifyV("CENTER")
 		self.Banner:SetText("Quest Title")
 		self.Banner:SetTextColor(0.95,0.95,0.95)
 		self.Banner:SetShadowOffset(1, -1)
@@ -1936,9 +1967,9 @@ function storyline.Text:ConfigureFrame()
 	self.Questtext = {}
 	self.Questtext.Font = storyline.Background.layer5.Questtext.Scrollframe.Content:CreateFontString(nil, "OVERLAY")
 		self.Questtext.Font:SetPoint("TOPLEFT", 15, -10)
-		self.Questtext.Font:SetFont("Fonts\\FRIZQT__.TTF", 14)
+		self.Questtext.Font:SetFont("Fonts\\FRIZQT__.TTF", StorylineOptions.FontSize)
 		self.Questtext.Font:SetWidth(600)
-		self.Questtext.Font:SetHeight(300)
+		self.Questtext.Font:SetHeight(0)
 		self.Questtext.Font:SetJustifyH("LEFT")
 		self.Questtext.Font:SetJustifyV("TOP")
 		self.Questtext.Font:SetText("TEST")
@@ -1991,7 +2022,7 @@ function storyline:AcceptQuest()
 	storyline:ShowNPCText(QuestText)
 
 	--Update Text
-	storyline.Text.NPCName:SetText(UnitName("target"))
+	storyline.Text.NPCName:SetText(UnitName("npc"))
 	local QuestTitel = GetTitleText()
 	storyline.Text.Banner:SetText(QuestTitel)
 
@@ -2038,7 +2069,7 @@ function storyline:ProgressQuest()
 	storyline.Text.Questtext.Complete:Hide()
 
 	--Update Text
-	storyline.Text.NPCName:SetText(UnitName("target"))
+	storyline.Text.NPCName:SetText(UnitName("npc"))
 	local QuestTitel = GetTitleText()
 	local ProgressText = GetProgressText()
 
@@ -2111,7 +2142,7 @@ function storyline:CompleteQuest()
 	storyline.Text.Questtext.Complete:Show()
 
 	--Update Text
-	storyline.Text.NPCName:SetText(UnitName("target"))
+	storyline.Text.NPCName:SetText(UnitName("npc"))
 	local QuestTitel = GetTitleText()
 	local RewardText = GetRewardText()
 
@@ -2325,8 +2356,8 @@ end
 -- Update 3D Models
 function storyline:UpdateModels()
 	
-	if UnitExists("target") then storyline.NPC.PlayerFrame:SetUnit("target")
-	else storyline.NPC.PlayerFrame:SetModel("Creature\\Snowman\\SnowMan.m2"); storyline.NPC.PlayerFrame:SetModelScale(2) end
+	if UnitExists("npc") then storyline.NPC.PlayerFrame:SetUnit("npc")
+	else storyline.NPC.PlayerFrame:SetModel("Interface\\Buttons\\talktomequestionmark.mdx");storyline.NPC.PlayerFrame:SetModelScale(3.5) end
 	
 	storyline.Player.PlayerFrame:SetUnit("player")
 
@@ -2346,8 +2377,16 @@ function storyline:UpdateModels()
 	elseif model == "Character\\Goblin\\Male\\GoblinMale" then storyline.NPC.PlayerFrame:SetModelScale(0.7)
 	elseif model == "Creature\\Ghost\\Ghost" then storyline.NPC.PlayerFrame:SetPosition(1,0,1.7)
 	elseif model == "Creature\\LostOne\\LostOne" then storyline.NPC.PlayerFrame:SetPosition(1.3,-0.5,1.1)
+	elseif model == "Creature\\FleshGolem\\FleshGolem" then storyline.NPC.PlayerFrame:SetPosition(0,-0.5,2)
+	elseif model == "Creature\\Dreadlord\\DreadLord" then storyline.NPC.PlayerFrame:SetPosition(0,0.7,6)
+	elseif model == "Creature\\WaterElemental\\WaterElemental" then storyline.NPC.PlayerFrame:SetPosition(0,0,1.5)
+	elseif model == "Creature\\Banshee\\Banshee" then storyline.NPC.PlayerFrame:SetPosition(0,0,0.2)
+	elseif model == "Creature\\GolemHarvestStage2\\GolemHarvestStage2" then storyline.NPC.PlayerFrame:SetPosition(0,0.5,1.8); storyline.NPC.PlayerFrame:SetModelScale(0.7)
+	elseif model == "Creature\\Goblin\\GoblinShredder" then storyline.NPC.PlayerFrame:SetPosition(0,0.5,2.5);storyline.NPC.PlayerFrame:SetModelScale(0.7)
+	elseif model == "Creature\\OrcMaleKid\\OrcMaleKid" then storyline.NPC.PlayerFrame:SetPosition(0,0.2,-0.2);storyline.NPC.PlayerFrame:SetModelScale(1.5)
+	elseif model == "Creature\\OrcFemaleKid\\OrcFemaleKid" then storyline.NPC.PlayerFrame:SetPosition(0,0.2,-0.2);storyline.NPC.PlayerFrame:SetModelScale(1.5)
+	elseif model == "Creature\\Quillboar\\QuillBoar" then storyline.NPC.PlayerFrame:SetPosition(0,0,0.4);storyline.NPC.PlayerFrame:SetModelScale(1.2)
 	end
-	
 end
 
 function storyline:ResetModels()
@@ -2361,7 +2400,7 @@ end
 function storyline:ShowNPCText(Text,Offset)
 
 	-- set text offset
-	if not Offset then storyline.Options.Offset = 0
+	if not Offset then storyline.Options.Offset = 50
 	else storyline.Options.Offset = Offset end
 
 	-- refresh Variables
@@ -2374,10 +2413,13 @@ function storyline:ShowNPCText(Text,Offset)
 
 	storyline.Variables.QuesttextLength = string.len(Text)
 	storyline.Text.Questtext.Font:SetText(Text)
-	storyline.Background.layer5.Questtext.Slider:SetMinMaxValues(0, storyline.Variables.QuesttextLength/5)
+	_,storyline.Variables.FontSize = storyline.Text.Questtext.Font:GetFont()
+	storyline.Variables.FontHeight = storyline.Text.Questtext.Font:GetHeight()
+	storyline.Background.layer5.Questtext.Slider:SetMinMaxValues(0, storyline.Variables.FontHeight -50) -- -50 offset at end of scrollframe
 
 	if QUEST_FADING_DISABLE == "1" then
 		storyline.Options.Fading = 0
+		storyline.Background.layer5.Questtext.Slider:SetValue(0)
 	elseif QUEST_FADING_DISABLE == "0" then
 		storyline.Options.Fading = 1
 	end
@@ -2446,7 +2488,7 @@ function storyline:QuestReward_OnClick()
 		end
 	elseif ( this.type == "choice" ) then
 		for i=1,6 do storyline.QuestComplete.Mainframe.Reward.Block[i]:SetBackdropColor(0.8,0.8,0.8,0) end
-		storyline.QuestComplete.Mainframe.Reward.Block[this:GetID()]:SetBackdropColor(0.8,0.8,0.8,0.3)
+		storyline.QuestComplete.Mainframe.Reward.Block[this:GetID()]:SetBackdropColor(0,0.8,0,0.3)
 		QuestFrameRewardPanel.itemChoice = this:GetID();
 	end
 end
@@ -2517,12 +2559,35 @@ function storyline:TalkAnimation()
 	end
 end
 
+-- chat inputs
+
+local function TextMenu(arg)
+	if arg == nil or arg == "" then
+		DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00Vanilla Storyline:|r This is help topic for |cFFFFFF00 /storyline|r",1,1,1)
+		DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00Vanilla Storyline:|r |cFFFFFF00 /storyline reset|r - reset scale.",1,1,1)
+		DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00Vanilla Storyline:|r |cFFFFFF00 /storyline move|r - set moveable.",1,1,1)
+	else
+		if arg == "reset" then
+			storyline.Background:SetScale(1); storyline.Options.WindowScale = 1; StorylineOptions.WindowScale = 1
+		elseif arg == "move" then
+			if not storyline.OptionsFrame.MoveButton:GetChecked() then storyline.Background:EnableMouse(1); storyline.OptionsFrame.MoveButton:SetChecked(true)
+			else storyline.Background:EnableMouse(0);storyline.OptionsFrame.MoveButton:SetChecked(false)  end
+		else
+			DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00Vanilla Storyline:|r unknown command",1,0.3,0.3);
+		end
+	end
+end
+
+-- slashcommands
+SlashCmdList['VANILLA_STORYLINE'] = TextMenu
+SLASH_VANILLA_STORYLINE1 = '/storyline'
+
 -- possible Areas and their textures
 storyline.Area = {}
 	storyline.Area["Dun Morogh"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\DunMorogh"}
 	storyline.Area["Durotar"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Durotar"}
 	storyline.Area["Elwynn Forest"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\ElwynnForest"}
-	storyline.Area["Mulgore"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Muldore"}	
+	storyline.Area["Mulgore"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Mulgore"}	
 	storyline.Area["Teldrassil"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Teldrassil"}
 	storyline.Area["Tirisfal Glades"]={[1]="Interface\\Glues\\Credits\\TirisfallGlades1",
 								[2]="Interface\\Glues\\Credits\\TirisfallGlades2",
@@ -2535,7 +2600,7 @@ storyline.Area = {}
 	storyline.Area["Westfall"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Westfall"}
 	storyline.Area["The Barrens"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\TheBarrens"}
 	storyline.Area["Redridge Mountains"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\RedridgeMountains"}
-	storyline.Area["Stonetalon Mountains"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Stonetalon Mountains"}
+	storyline.Area["Stonetalon Mountains"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\StonetalonMountains"}
 	storyline.Area["Ashenvale"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Ashenvale"}
 	storyline.Area["Duskwood"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Duskwood"}
 	storyline.Area["Hillsbrad Foothills"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\HillsbradFoothills"}

@@ -48,6 +48,7 @@ if GetLocale() == "enUS" then
 	StorylineTrans["Stormwind City"] = "Stormwind City"
 	StorylineTrans["Thunder Bluff"] = "Thunder Bluff"
 	StorylineTrans["Undercity"] = "Undercity"
+	StorylineTrans["Alterac Valley"] = "Alterac Mountains"
 
 elseif GetLocale() == "deDE" then
 	StorylineTrans["Dun Morogh"] = "Dun Morogh"
