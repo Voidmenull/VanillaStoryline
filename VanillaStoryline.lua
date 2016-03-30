@@ -2415,6 +2415,7 @@ function storyline:ShowNPCText(Text,Offset)
 	storyline.Text.Questtext.Font:SetText(Text)
 	_,storyline.Variables.FontSize = storyline.Text.Questtext.Font:GetFont()
 	storyline.Variables.FontHeight = storyline.Text.Questtext.Font:GetHeight()
+	if storyline.Variables.FontHeight < 50 then storyline.Variables.FontHeight  = 50 end
 	storyline.Background.layer5.Questtext.Slider:SetMinMaxValues(0, storyline.Variables.FontHeight -50) -- -50 offset at end of scrollframe
 
 	if QUEST_FADING_DISABLE == "1" then
