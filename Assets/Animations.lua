@@ -1,4 +1,4 @@
--- original source: https://github.com/Lanrutcon/Backport-Storyline/blob/master/structures.lua
+-- original idea source: https://github.com/Lanrutcon/Backport-Storyline/blob/master/structures.lua
 
 local EXCLAME_ID = "64" -- EmoteTalkExclamation
 local QUESTION_ID = "65" -- EmoteTalkQuestion
@@ -11,6 +11,7 @@ local WAVE_ID = "67" -- EmoteWave
 local LAUGH_ID = "70" -- EmoteLaugh
 local SALUTE_ID = "113" -- EmoteSalute
 
+-- duration comes from models.MPQ -> number of animation length
 Storyline_ANIMATION_SEQUENCE_DURATION_BY_MODEL = {
 	-- NIGHT ELVES
 	["Character\\NightElf\\Female\\NightElfFemale"] = { -- readout
@@ -157,154 +158,132 @@ Storyline_ANIMATION_SEQUENCE_DURATION_BY_MODEL = {
 		[LAUGH_ID] = 3300,
 		[SALUTE_ID] = 1667,
 	},
---local EXCLAME_ID = "64" -- EmoteTalkExclamation
---local QUESTION_ID = "65" -- EmoteTalkQuestion
---local TALK_ID = "60" -- EmoteTalk
---local YES_ID = "185" -- EmoteYes
---local NOPE_ID = "186" -- EmoteNo
----local ACLAIM_ID = "68" -- EmoteCheer
---local BOW_ID = "66" -- EmoteBow
---local WAVE_ID = "67" -- EmoteWave
---local LAUGH_ID = "70" -- EmoteLaugh
---local SALUTE_ID = "113" -- EmoteSalute
 	-- Tauren
-	["Character\\Tauren\\Female\\TaurenFemale"] = {
+	["Character\\Tauren\\Female\\TaurenFemale"] = { -- readout
 		[EXCLAME_ID] = 2000,
-		[QUESTION_ID] = 1600,
-		[TALK_ID] = 2100,
+		[QUESTION_ID] = 1800,
+		[TALK_ID] = 2934,
 		[YES_ID] = 2000,
-		[NOPE_ID] = 1600,
-		[ACLAIM_ID] = 800,
-		[BOW_ID] = 2300,
-		[WAVE_ID] = 2000,
-		[LAUGH_ID] = 2400,
+		[NOPE_ID] = 2000,
+		[ACLAIM_ID] = 2000,
+		[BOW_ID] = 3100,
+		[WAVE_ID] = 2500,
+		[LAUGH_ID] = 3300,
 		[SALUTE_ID] = 2000,
 	},
-	["Character\\Tauren\\Male\\TaurenMale"] = {
+	["Character\\Tauren\\Male\\TaurenMale"] = { -- readout
 		[EXCLAME_ID] = 2000,
-		[QUESTION_ID] = 1600,
-		[TALK_ID] = 2100,
+		[QUESTION_ID] = 1800,
+		[TALK_ID] = 2934,
 		[YES_ID] = 2000,
-		[NOPE_ID] = 1600,
-		[ACLAIM_ID] = 800,
-		[BOW_ID] = 2300,
-		[WAVE_ID] = 2000,
-		[LAUGH_ID] = 2400,
-		[SALUTE_ID] = 2000,
+		[NOPE_ID] = 2000,
+		[ACLAIM_ID] = 2000,
+		[BOW_ID] = 2667,
+		[WAVE_ID] = 2500,
+		[LAUGH_ID] = 3300,
+		[SALUTE_ID] = 1833,
 	},
 	-- Troll
-	["Character\\Troll\\Female\\TrollFemale"] = {
-		[EXCLAME_ID] = 2000,
-		[QUESTION_ID] = 1600,
-		[TALK_ID] = 2100,
+	["Character\\Troll\\Female\\TrollFemale"] = { -- readout
+		[EXCLAME_ID] = 2333,
+		[QUESTION_ID] = 1500,
+		[TALK_ID] = 2500,
 		[YES_ID] = 2000,
-		[NOPE_ID] = 1600,
-		[ACLAIM_ID] = 800,
-		[BOW_ID] = 2300,
-		[WAVE_ID] = 2000,
-		[LAUGH_ID] = 2400,
-		[SALUTE_ID] = 2000,
+		[NOPE_ID] = 2000,
+		[ACLAIM_ID] = 2166,
+		[BOW_ID] = 2167,
+		[WAVE_ID] = 2500,
+		[LAUGH_ID] = 2333,
+		[SALUTE_ID] = 1833,
 	},
-	["Character\\Troll\\Male\\TrollMale"] = {
-		[EXCLAME_ID] = 2000,
-		[QUESTION_ID] = 1600,
-		[TALK_ID] = 2100,
-		[YES_ID] = 2000,
-		[NOPE_ID] = 1600,
-		[ACLAIM_ID] = 800,
-		[BOW_ID] = 2300,
-		[WAVE_ID] = 2000,
-		[LAUGH_ID] = 2400,
-		[SALUTE_ID] = 2000,
+	["Character\\Troll\\Male\\TrollMale"] = { -- readout
+		[EXCLAME_ID] = 2667,
+		[QUESTION_ID] = 2000,
+		[TALK_ID] = 2500,
+		[YES_ID] = 1666,
+		[NOPE_ID] = 1667,
+		[ACLAIM_ID] = 3300,
+		[BOW_ID] = 2667,
+		[WAVE_ID] = 2667,
+		[LAUGH_ID] = 3000,
+		[SALUTE_ID] = 2200,
 	},
 	-- Scourge
-	["Character\\Scourge\\Male\\ScourgeMale"] = {
-		[EXCLAME_ID] = 2000,
-		[QUESTION_ID] = 1600,
-		[TALK_ID] = 2100,
+	["Character\\Scourge\\Male\\ScourgeMale"] = { -- readout
+		[EXCLAME_ID] = 2334,
+		[QUESTION_ID] = 2333,
+		[TALK_ID] = 2667,
 		[YES_ID] = 2000,
-		[NOPE_ID] = 1600,
-		[ACLAIM_ID] = 800,
-		[BOW_ID] = 2300,
+		[NOPE_ID] = 2000,
+		[ACLAIM_ID] = 2333,
+		[BOW_ID] = 2666,
 		[WAVE_ID] = 2000,
-		[LAUGH_ID] = 2400,
-		[SALUTE_ID] = 2000,
+		[LAUGH_ID] = 3333,
+		[SALUTE_ID] = 1833,
 	},
-	["Character\\Scourge\\Female\\ScourgeFemale"] = {
+	["Character\\Scourge\\Female\\ScourgeFemale"] = { -- readout
 		[EXCLAME_ID] = 2000,
-		[QUESTION_ID] = 1600,
-		[TALK_ID] = 2100,
+		[QUESTION_ID] = 2000,
+		[TALK_ID] = 2000,
 		[YES_ID] = 2000,
-		[NOPE_ID] = 1600,
-		[ACLAIM_ID] = 800,
-		[BOW_ID] = 2300,
-		[WAVE_ID] = 2000,
-		[LAUGH_ID] = 2400,
-		[SALUTE_ID] = 2000,
+		[NOPE_ID] = 2000,
+		[ACLAIM_ID] = 2000,
+		[BOW_ID] = 2666,
+		[WAVE_ID] = 1500,
+		[LAUGH_ID] = 3000,
+		[SALUTE_ID] = 1666,
 	},
 
 	--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 	-- NPC
 	--*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 	-- Blood Elfes
-	["Creature\\HighElf\\HighElfFemale_Mage"] = {
-		[TALK_ID] = 2100,
+	["Creature\\HighElf\\HighElfFemale_Mage"] = { -- readout
+		[TALK_ID] = 2334,
 		[ACLAIM_ID] = 800,
-		[BOW_ID] = 2300,
+		[BOW_ID] = 2333,
 		[WAVE_ID] = 2000,
 	},
 	["Creature\\HighElf\\HighElfFemale_Hunter"] = {
-		[TALK_ID] = 2100,
+		[TALK_ID] = 2334,
 		[ACLAIM_ID] = 800,
-		[BOW_ID] = 2300,
+		[BOW_ID] = 2333,
 		[WAVE_ID] = 2000,
 	},
 	["Creature\\HighElf\\HighElfFemale_Priest"] = {
-		[TALK_ID] = 2100,
+		[TALK_ID] = 2334,
 		[ACLAIM_ID] = 800,
-		[BOW_ID] = 2300,
+		[BOW_ID] = 2333,
 		[WAVE_ID] = 2000,
 	},
 	["Creature\\HighElf\\HighElfFemale_Warrior"] = {
-		[TALK_ID] = 2100,
+		[TALK_ID] = 2334,
 		[ACLAIM_ID] = 800,
-		[BOW_ID] = 2300,
+		[BOW_ID] = 2333,
 		[WAVE_ID] = 2000,
 	},
-	["Creature\\HighElf\\HighElfMale_Hunter"] = {
-		[EXCLAME_ID] = 2000,
-		[QUESTION_ID] = 1600,
-		[TALK_ID] = 2100,
-		[ACLAIM_ID] = 800,
-		[BOW_ID] = 2300,
-		[WAVE_ID] = 2000,
-		[LAUGH_ID] = 2400,
+	["Creature\\HighElf\\HighElfMale_Hunter"] = { -- readout
+		[TALK_ID] = 2000,
+		[ACLAIM_ID] = 2000,
+		[BOW_ID] = 2000,
+		[WAVE_ID] = 1334,
 	},
 	["Creature\\HighElf\\HighElfMale_Mage"] = {
-		[EXCLAME_ID] = 2000,
-		[QUESTION_ID] = 1600,
-		[TALK_ID] = 2100,
-		[ACLAIM_ID] = 800,
-		[BOW_ID] = 2300,
-		[WAVE_ID] = 2000,
-		[LAUGH_ID] = 2400,
+		[TALK_ID] = 2000,
+		[ACLAIM_ID] = 2000,
+		[BOW_ID] = 2000,
+		[WAVE_ID] = 1334,
 	},
 	["Creature\\HighElf\\HighElfMale_Priest"] = {
-		[EXCLAME_ID] = 2000,
-		[QUESTION_ID] = 1600,
-		[TALK_ID] = 2100,
-		[ACLAIM_ID] = 800,
-		[BOW_ID] = 2300,
-		[WAVE_ID] = 2000,
-		[LAUGH_ID] = 2400,
+		[TALK_ID] = 2000,
+		[ACLAIM_ID] = 2000,
+		[BOW_ID] = 2000,
+		[WAVE_ID] = 1334,
 	},
 	["Creature\\HighElf\\HighElfMale_Warrior"] = {
-		[EXCLAME_ID] = 2000,
-		[QUESTION_ID] = 1600,
-		[TALK_ID] = 2100,
-		[ACLAIM_ID] = 800,
-		[BOW_ID] = 2300,
-		[WAVE_ID] = 2000,
-		[LAUGH_ID] = 2400,
+		[TALK_ID] = 2000,
+		[ACLAIM_ID] = 2000,
+		[BOW_ID] = 2000,
+		[WAVE_ID] = 1334,
 	},
 }

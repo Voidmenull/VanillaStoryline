@@ -1,9 +1,3 @@
--- for debug
-function print(content)
-	DEFAULT_CHAT_FRAME:AddMessage(content)
-end
-
--- local later
 local storyline = CreateFrame("Frame",nil); -- Event Frame
 	storyline.Background = CreateFrame("Frame","StorylineFrame",UIParent) -- Background Frame
 	storyline.Player = CreateFrame("Frame",nil,storyline.Background) -- Player Frame
@@ -36,11 +30,12 @@ storyline.Options.GradientLength = 30
 storyline.Options.Offset = 0 -- text offset for max. scroll frame
 storyline.Options.Delay = 0.03 -- 30 fps update
 storyline.Options.FrameStrata = {[1]="BACKGROUND",[2]="LOW",[3]="MEDIUM",[4]="HIGH",[5]="DIALOG",[6]="FULLSCREEN",[7]="FULLSCREEN_DIALOG",[8]="TOOLTIP"}
-storyline.Options.Version = "0.5.4" -- version
+storyline.Options.Version = "1.0.0" -- version
 
 -- onupdate text
 storyline.Variables.fadingProgress = 0
 storyline.Variables.SliderProgress = 0
+storyline.Variables.SliderStop = 0
 storyline.Variables.QuesttextLength = 0
 storyline.Variables.GreetingsFlag = 0
 storyline.Variables.LastTime = 0
@@ -84,7 +79,9 @@ function storyline:OnEvent()
 	elseif event == "QUEST_ITEM_UPDATE" then -- no update impleted - reload frame instead
 		DeclineQuest()
 		storyline.Background:Hide()
+		storyline:ResetModels()
 	elseif event == "GOSSIP_SHOW" then
+		storyline:ResetModels()
 		storyline:UpdateZone()
 		storyline.Variables.GreetingsFlag = 0
 		storyline:HideBlizzard()
@@ -113,7 +110,7 @@ function storyline:OnEvent()
 		storyline.Options.WindowLevel = StorylineOptions.WindowLevel
 		storyline.Options.HideBlizzardFrames = StorylineOptions.HideBlizzardFrames
 
-		-- Greate UI
+		-- Create UI
 		storyline.Background:ConfigureFrame() -- configure Background Frame
 		storyline.Player:ConfigureFrame() -- configure player 3d Frame
 		storyline.NPC:ConfigureFrame() -- configure the NPC 3d frame
@@ -141,7 +138,7 @@ function storyline:OnUpdate()
 		storyline.Variables.SliderProgress = storyline.Variables.SliderProgress + ((storyline.Variables.FontSize/14)*storyline.Options.TextSpeed/3)
 
 		-- set Slider Progression
-		storyline.Background.layer5.Questtext.Slider:SetValue(storyline.Variables.SliderProgress-50)
+		if storyline.Variables.SliderStop == 0 then storyline.Background.layer5.Questtext.Slider:SetValue(storyline.Variables.SliderProgress-50) end
 
 		-- Set Font Fading
 		storyline.Text.Questtext.Font:SetAlphaGradient(storyline.Variables.fadingProgress,storyline.Options.GradientLength)
@@ -443,6 +440,7 @@ function storyline.Background:ConfigureFrame()
 		self.layer5.Questtext:SetScript("OnMouseWheel", function()
 		  local value = self.layer5.Questtext.Slider:GetValue()
 		  self.layer5.Questtext.Slider:SetValue(value-(arg1*10))
+		  storyline.Variables.SliderStop = 1
 		end)
 
 	-- Scrollframe
@@ -531,6 +529,7 @@ function storyline.Gossip:ConfigureFrame()
 		self.Frame:SetBackdropColor(1,1,1,0.5)
 		self.Frame:SetBackdropBorderColor(1,1,0,1)
 		self.Frame:EnableMouseWheel(1)
+		
 		self.Frame:SetScript("OnMouseWheel", function()
 			local value = self.Frame.Slider:GetValue()
 			self.Frame.Slider:SetValue(value-(arg1*10))
@@ -1916,26 +1915,24 @@ function storyline.Player:ConfigureFrame()
 end
 
 function storyline.NPC:ConfigureFrame()
-
 	self.Background = CreateFrame("Frame",nil,storyline.Background.layer3)
 		local backdrop = {bgFile = "Interface\\TutorialFrame\\TutorialFrameBackground"}
 		self.Background:SetBackdrop(backdrop)
 		self.Background:SetBackdropColor(1,1,1,0) -- alpha = 0
-		self.Background:SetWidth(300)
+		self.Background:SetWidth(500)
 		self.Background:SetHeight(400)
-		self.Background:SetPoint("TOP",200,-60)
+		self.Background:SetPoint("TOPRIGHT",-30,-30)
 
 	self.PlayerFrame = CreateFrame("PlayerModel", nil, storyline.Background.layer3)
-		self.PlayerFrame:SetPoint("TOP",self.Background)
-		self.PlayerFrame:SetWidth(300)
+		self.PlayerFrame:SetPoint("TOPRIGHT",self.Background)
+		self.PlayerFrame:SetWidth(500)
 		self.PlayerFrame:SetHeight(400)
-		--self.PlayerFrame:SetUnit("target")
-		self.PlayerFrame:SetModel("Interface\\Buttons\\talktomequestionmark.mdx") -- modelfix: set random model first, so GetModel will be avalible for "target" later
+		self.PlayerFrame:SetModel("Interface\\Buttons\\talktomequestionmark.mdx") -- modelfix: set random model first, so GetModel will be avalible for "npc" later
 		self.PlayerFrame:SetFacing(-0.8)
 		
-		self.PlayerFrame:SetModelScale(1)
-		self.PlayerFrame:SetPosition(1,0,0)
-		self.PlayerFrame:SetFacing(-0.8)
+	storyline.NPC.PlayerFrame:SetModelScale(1)
+	storyline.NPC.PlayerFrame:SetPosition(0,0,0)
+	storyline.NPC.PlayerFrame:SetFacing(-0.8)
 
 end
 
@@ -2165,26 +2162,8 @@ function storyline:GetObjectiveText()
 	local QuestLogTitelLevel
 	local numEntries = GetNumQuestLogEntries()
 	local ObjectiveText
-
-	-- check if EQL3 (Extended Quest Log Addon) is active - EQL3 adds a [lvl] into text
-	--[[if EQL3_QuestLogFrame then
-		for i=1, numEntries do
-			QuestLogTitel,QuestLogTitelLevel,questTag = GetQuestLogTitle(i)
-			if (questTag ~= NIL) then
-						QuestLogTitelLevel = QuestLogTitelLevel.."+";
-			end
-			if "["..QuestLogTitelLevel.."] "..QuestLogTitel == QuestTitel then
-				QuestID = i
-			end
-		end
-	else
-		for i=1, numEntries do
-			if GetQuestLogTitle(i) == QuestTitel then
-				QuestID = i
-			end
-		end
-	end--]]
 	
+	-- buggy for few quests
 	for i=1, numEntries do
 		QuestLogTitel = GetQuestLogTitle(i)
 		if string.find(QuestTitel, QuestLogTitel) then -- find doesnt accept functions as arguments
@@ -2237,7 +2216,7 @@ function storyline:UpdateReqItems()
 			storyline.QuestProgress.Mainframe.Objective.Block[counter]:Show()
 		end
 
-		else
+	else
 		-- Text
 		local numObjectives = GetNumQuestLeaderBoards()
 		for i=1, numObjectives do
@@ -2261,6 +2240,9 @@ end
 function storyline:UpdateRewardItems()
 	-- hide all frames
 	for i=1,6 do storyline.QuestComplete.Mainframe.Reward.Block[i]:Hide() end
+	
+	-- reset center item
+	storyline.QuestComplete.Mainframe.CenterItem:SetBackdrop({bgFile = "Interface\\Icons\\INV_Box_02"})
 
 	local numQuestChoices = GetNumQuestChoices()
 	local numQuestRewards = GetNumQuestRewards()
@@ -2313,8 +2295,8 @@ function storyline:UpdateRewardItems()
 		counter = counter + 1
 		local IDnum = i
 		local name, texture, numItems, quality, isUsable = GetQuestItemInfo("reward", i)
+		if i == 1 then storyline.QuestComplete.Mainframe.CenterItem:SetBackdrop({bgFile = texture}) end
 		if numItems == 1 then numItems = " " end -- dont show 1 item
-
 		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item:SetBackdrop({bgFile = texture})
 		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Font:SetText(numItems)
 		storyline.QuestComplete.Mainframe.Reward.Block[counter].TextFont:SetText(name)
@@ -2335,7 +2317,7 @@ function storyline:UpdateRewardItems()
 		local numItems = 1
 		local texture, name, isTradeskillSpell = GetRewardSpell()
 		if numItems == 1 then numItems = " " end -- dont show 1 item
-
+		storyline.QuestComplete.Mainframe.CenterItem:SetBackdrop({bgFile = texture})
 		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item:SetBackdrop({bgFile = texture})
 		storyline.QuestComplete.Mainframe.Reward.Block[counter].Item.Font:SetText(numItems)
 		storyline.QuestComplete.Mainframe.Reward.Block[counter].TextFont:SetText(name)
@@ -2357,28 +2339,66 @@ end
 function storyline:UpdateModels()
 	
 	if UnitExists("npc") then storyline.NPC.PlayerFrame:SetUnit("npc")
-	else storyline.NPC.PlayerFrame:SetModel("Interface\\Buttons\\talktomequestionmark.mdx");storyline.NPC.PlayerFrame:SetModelScale(3.5) end
+	else storyline.NPC.PlayerFrame:SetModel("Interface\\Buttons\\talktomequestionmark.mdx") end
 	
+	
+	-- set players scale
 	storyline.Player.PlayerFrame:SetUnit("player")
+	storyline.Player.PlayerFrame:SetModelScale(1)
+	
+	local model = storyline.Player.PlayerFrame:GetModel()
+	if model == "Character\\Dwarf\\Female\\DwarfFemale" then storyline.Player.PlayerFrame:SetModelScale(0.9)
+	elseif model == "Character\\Dwarf\\Male\\DwarfMale" then storyline.Player.PlayerFrame:SetModelScale(0.9)
+	elseif model == "Character\\Gnome\\Female\\GnomeFemale" then storyline.Player.PlayerFrame:SetModelScale(0.75)
+	elseif model == "Character\\Gnome\\Male\\GnomeMale" then storyline.Player.PlayerFrame:SetModelScale(0.75)
+	elseif model == "Character\\Human\\Female\\HumanFemale" then storyline.Player.PlayerFrame:SetModelScale(0.95)
+	elseif model == "Character\\Human\\Male\\HumanMale" then storyline.Player.PlayerFrame:SetModelScale(1.02)
+	elseif model == "Character\\NightElf\\Male\\NightElfMale" then storyline.Player.PlayerFrame:SetModelScale(1.07)
+	elseif model == "Character\\Orc\\Female\\OrcFemale" then storyline.Player.PlayerFrame:SetModelScale(0.95)
+	elseif model == "Character\\Orc\\Male\\OrcMale" then storyline.Player.PlayerFrame:SetModelScale(0.97)
+	elseif model == "Character\\Scourge\\Female\\ScourgeFemale" then storyline.Player.PlayerFrame:SetModelScale(1.02)
+	elseif model == "Character\\Scourge\\Male\\ScourgeMale" then storyline.Player.PlayerFrame:SetModelScale(0.97)
+	elseif model == "Character\\Tauren\\Female\\TaurenFemale" then storyline.Player.PlayerFrame:SetModelScale(1.12)
+	elseif model == "Character\\Tauren\\Male\\TaurenMale" then storyline.Player.PlayerFrame:SetModelScale(1.14)
+	elseif model == "Character\\Troll\\Female\\TrollFemale" then storyline.Player.PlayerFrame:SetModelScale(1.05)
+	end
+	
+	-- set default parameters
+	storyline.NPC.PlayerFrame:SetModelScale(0.75)
+	storyline.NPC.PlayerFrame:SetPosition(0,0.6,0.05)
+	storyline.NPC.PlayerFrame:SetFacing(-0.8)
 
 	-- Model scale Fixes for uncommon creatures
 	local model = storyline.NPC.PlayerFrame:GetModel()
 	
 	-- individual model position fix
-	if model == "Creature\\HighElf\\HighElfMale_Hunter" then storyline.NPC.PlayerFrame:SetFacing(-1.2); storyline.NPC.PlayerFrame:SetPosition(-1.4,2,0.6)
-	elseif model == "Creature\\HighElf\\HighElfMale_Mage" then storyline.NPC.PlayerFrame:SetFacing(-1.2); storyline.NPC.PlayerFrame:SetPosition(-1.4,2,0.6)
-	elseif model == "Creature\\HighElf\\HighElfMale_Priest" then storyline.NPC.PlayerFrame:SetFacing(-1.2); storyline.NPC.PlayerFrame:SetPosition(-1.4,2,0.6)
-	elseif model == "Creature\\HighElf\\HighElfMale_Warrior" then storyline.NPC.PlayerFrame:SetFacing(-1.2); storyline.NPC.PlayerFrame:SetPosition(-1.4,2,0.6)
-	elseif model == "Creature\\HighElf\\HighElfFemale_Hunter" then storyline.NPC.PlayerFrame:SetPosition(-0.1,0.2,0)
-	elseif model == "Creature\\HighElf\\HighElfFemale_Mage" then storyline.NPC.PlayerFrame:SetPosition(-0.1,0.2,0)
-	elseif model == "Creature\\HighElf\\HighElfFemale_Priest" then storyline.NPC.PlayerFrame:SetPosition(-0.1,0.2,0)
-	elseif model == "Creature\\HighElf\\HighElfFemale_Warrior" then storyline.NPC.PlayerFrame:SetPosition(-0.1,0.2,0)
-	elseif model == "Character\\Goblin\\Female\\GoblinFemale" then storyline.NPC.PlayerFrame:SetModelScale(0.7)
-	elseif model == "Character\\Goblin\\Male\\GoblinMale" then storyline.NPC.PlayerFrame:SetModelScale(0.7)
-	elseif model == "Creature\\Ghost\\Ghost" then storyline.NPC.PlayerFrame:SetPosition(1,0,1.7)
-	elseif model == "Creature\\LostOne\\LostOne" then storyline.NPC.PlayerFrame:SetPosition(1.3,-0.5,1.1)
-	elseif model == "Creature\\FleshGolem\\FleshGolem" then storyline.NPC.PlayerFrame:SetPosition(0,-0.5,2)
-	elseif model == "Creature\\Dreadlord\\DreadLord" then storyline.NPC.PlayerFrame:SetPosition(0,0.7,6)
+	if model == "Interface\\Buttons\\talktomequestionmark" then storyline.NPC.PlayerFrame:SetPosition(0,0.9,0);storyline.NPC.PlayerFrame:SetModelScale(2) -- ok with scalebug
+	elseif model == "Character\\Gnome\\Male\\GnomeMale" then storyline.NPC.PlayerFrame:SetPosition(0,0.4,0);storyline.NPC.PlayerFrame:SetModelScale(0.6) -- ok
+	elseif model == "Character\\Gnome\\Female\\GnomeFemale" then storyline.NPC.PlayerFrame:SetPosition(0,0.3,0);storyline.NPC.PlayerFrame:SetModelScale(0.6) -- ok
+	elseif model == "Character\\Dwarf\\Male\\DwarfMale" then storyline.NPC.PlayerFrame:SetPosition(0,0.5,0);storyline.NPC.PlayerFrame:SetModelScale(0.7) -- ok
+	elseif model == "Character\\Dwarf\\Female\\DwarfFemale" then storyline.NPC.PlayerFrame:SetPosition(0,0.5,0);storyline.NPC.PlayerFrame:SetModelScale(0.7) -- ok
+	elseif model == "Character\\NightElf\\Male\\NightElfMale" then storyline.NPC.PlayerFrame:SetPosition(0,0.8,0);storyline.NPC.PlayerFrame:SetModelScale(0.85) -- ok
+	elseif model == "Character\\NightElf\\Female\\NightElfFemale" then storyline.NPC.PlayerFrame:SetPosition(0,0.7,0);storyline.NPC.PlayerFrame:SetModelScale(0.8) -- ok
+	elseif model == "Character\\Tauren\\Male\\TaurenMale" then storyline.NPC.PlayerFrame:SetPosition(0,0.6,0.05);storyline.NPC.PlayerFrame:SetModelScale(0.9) -- ok
+	elseif model == "Character\\Tauren\\Female\\TaurenFemale" then storyline.NPC.PlayerFrame:SetPosition(0,0.6,0.05);storyline.NPC.PlayerFrame:SetModelScale(0.9) -- ok
+	elseif model == "Character\\Troll\\Female\\TrollFemale" then storyline.NPC.PlayerFrame:SetModelScale(0.8) -- ok
+	elseif model == "Character\\Human\\Female\\HumanFemale" then storyline.NPC.PlayerFrame:SetModelScale(0.72) -- ok
+	
+	-- npc models
+	elseif model == "Creature\\HighElf\\HighElfMale_Hunter" then storyline.NPC.PlayerFrame:SetFacing(-1.5); storyline.NPC.PlayerFrame:SetPosition(-2,2.4,0.7) -- ok
+	elseif model == "Creature\\HighElf\\HighElfMale_Mage" then storyline.NPC.PlayerFrame:SetFacing(-1.5); storyline.NPC.PlayerFrame:SetPosition(-2,2.4,0.7) -- ok
+	elseif model == "Creature\\HighElf\\HighElfMale_Priest" then storyline.NPC.PlayerFrame:SetFacing(-1.5); storyline.NPC.PlayerFrame:SetPosition(-2,2.4,0.7) -- ok
+	elseif model == "Creature\\HighElf\\HighElfMale_Warrior" then storyline.NPC.PlayerFrame:SetFacing(-1.5); storyline.NPC.PlayerFrame:SetPosition(-2,2.4,0.7) -- ok
+	elseif model == "Creature\\HighElf\\HighElfFemale_Hunter" then storyline.NPC.PlayerFrame:SetPosition(-0.9,0.8,0) -- ok
+	elseif model == "Creature\\HighElf\\HighElfFemale_Mage" then storyline.NPC.PlayerFrame:SetPosition(-0.9,0.8,0) -- ok
+	elseif model == "Creature\\HighElf\\HighElfFemale_Priest" then storyline.NPC.PlayerFrame:SetPosition(-0.9,0.8,0) -- ok
+	elseif model == "Creature\\HighElf\\HighElfFemale_Warrior" then storyline.NPC.PlayerFrame:SetPosition(-0.9,0.8,0) -- ok
+	elseif model == "Character\\Goblin\\Female\\GoblinFemale" then storyline.NPC.PlayerFrame:SetPosition(0,0.4,0.05);storyline.NPC.PlayerFrame:SetModelScale(0.5) --ok
+	elseif model == "Character\\Goblin\\Male\\GoblinMale" then storyline.NPC.PlayerFrame:SetPosition(0,0.4,0.05);storyline.NPC.PlayerFrame:SetModelScale(0.5) -- ok
+	elseif model == "Creature\\Ghost\\Ghost" then storyline.NPC.PlayerFrame:SetPosition(0,0.5,1.9);storyline.NPC.PlayerFrame:SetModelScale(0.8) -- ok with scalebug
+	elseif model == "Creature\\LostOne\\LostOne" then storyline.NPC.PlayerFrame:SetPosition(0,0,0.7);storyline.NPC.PlayerFrame:SetModelScale(0.95) -- ok with scalebug
+	elseif model == "Creature\\FleshGolem\\FleshGolem" then storyline.NPC.PlayerFrame:SetPosition(0,0.4,2);storyline.NPC.PlayerFrame:SetModelScale(0.85-(StorylineOptions.WindowScale-1))-- ok with scalebug
+	elseif model == "Creature\\Dreadlord\\DreadLord" then storyline.NPC.PlayerFrame:SetPosition(0,1.5,6.2);storyline.NPC.PlayerFrame:SetModelScale(1-(StorylineOptions.WindowScale-1)) -- ok with big scalebug
 	elseif model == "Creature\\WaterElemental\\WaterElemental" then storyline.NPC.PlayerFrame:SetPosition(0,0,1.5)
 	elseif model == "Creature\\Banshee\\Banshee" then storyline.NPC.PlayerFrame:SetPosition(0,0,0.2)
 	elseif model == "Creature\\GolemHarvestStage2\\GolemHarvestStage2" then storyline.NPC.PlayerFrame:SetPosition(0,0.5,1.8); storyline.NPC.PlayerFrame:SetModelScale(0.7)
@@ -2386,14 +2406,23 @@ function storyline:UpdateModels()
 	elseif model == "Creature\\OrcMaleKid\\OrcMaleKid" then storyline.NPC.PlayerFrame:SetPosition(0,0.2,-0.2);storyline.NPC.PlayerFrame:SetModelScale(1.5)
 	elseif model == "Creature\\OrcFemaleKid\\OrcFemaleKid" then storyline.NPC.PlayerFrame:SetPosition(0,0.2,-0.2);storyline.NPC.PlayerFrame:SetModelScale(1.5)
 	elseif model == "Creature\\Quillboar\\QuillBoar" then storyline.NPC.PlayerFrame:SetPosition(0,0,0.4);storyline.NPC.PlayerFrame:SetModelScale(1.2)
+	elseif model == "Creature\\Ogre\\Ogre" then storyline.NPC.PlayerFrame:SetPosition(0,0.6,0.2) -- ok
+	elseif model == "Creature\\HumanMalePirateCaptain\\HumanMalePirateCaptain" then storyline.NPC.PlayerFrame:SetPosition(0,0.8,0.8);storyline.NPC.PlayerFrame:SetModelScale(1.2-(StorylineOptions.WindowScale-1)) --ok with scalebug
+	elseif model == "Creature\\Gnoll\\gnoll" then storyline.NPC.PlayerFrame:SetPosition(0,0.5,0.2);storyline.NPC.PlayerFrame:SetModelScale(0.95) -- ok
+	elseif model == "Creature\\Infernal\\Infernal" then storyline.NPC.PlayerFrame:SetPosition(0,0.6,1.2	);storyline.NPC.PlayerFrame:SetModelScale(0.8-(StorylineOptions.WindowScale-1)) -- ok	with scalebug
+	elseif model == "Creature\\Kodobeast\\KodoBeastPack" then storyline.NPC.PlayerFrame:SetPosition(0,0.2,2.6);storyline.NPC.PlayerFrame:SetModelScale(0.4) -- ok with scalebug
+	elseif model == "Creature\\DragonSpawn\\DragonSpawn" then storyline.NPC.PlayerFrame:SetPosition(0,2,1);storyline.NPC.PlayerFrame:SetModelScale(0.9-(StorylineOptions.WindowScale-1)) -- ok with scalebug
 	end
+	
 end
 
 function storyline:ResetModels()
-	-- Reset Settings
+	-- Reset parameter
 	storyline.NPC.PlayerFrame:SetModelScale(1)
-	storyline.NPC.PlayerFrame:SetPosition(1,0,0)
+	storyline.NPC.PlayerFrame:SetPosition(0,0,0)
 	storyline.NPC.PlayerFrame:SetFacing(-0.8)
+	
+	storyline.Player.PlayerFrame:SetModelScale(1)
 end
 
 -- Fill the Scrollframe + Fade
@@ -2407,9 +2436,11 @@ function storyline:ShowNPCText(Text,Offset)
 	storyline.Options.Fading = 0
 	storyline.Variables.fadingProgress = 0
 	storyline.Variables.SliderProgress = 0
+	storyline.Variables.SliderStop = 0
 	storyline.Variables.QuesttextLength = 0
 	storyline.Variables.LastTime = 0
 	storyline.Variables.Time = 0
+	
 
 	storyline.Variables.QuesttextLength = string.len(Text)
 	storyline.Text.Questtext.Font:SetText(Text)
@@ -2491,6 +2522,8 @@ function storyline:QuestReward_OnClick()
 		for i=1,6 do storyline.QuestComplete.Mainframe.Reward.Block[i]:SetBackdropColor(0.8,0.8,0.8,0) end
 		storyline.QuestComplete.Mainframe.Reward.Block[this:GetID()]:SetBackdropColor(0,0.8,0,0.3)
 		QuestFrameRewardPanel.itemChoice = this:GetID();
+		local _, texture= GetQuestItemInfo("choice", QuestFrameRewardPanel.itemChoice)
+		storyline.QuestComplete.Mainframe.CenterItem:SetBackdrop({bgFile = texture})
 	end
 end
 
@@ -2506,10 +2539,8 @@ function storyline:UpdateZone()
 		for i=1,11 do
 			if storyline.Area[zoneName][i] then self.Background.layer2.Background[i].Bg:SetTexture(storyline.Area[zoneName][i]) end
 		end
-	else -- standard picture
-		for i=1,6 do
-			self.Background.layer2.Background[i].Bg:SetTexture(storyline.Area["Standard"][i])
-		end
+	else -- standard picture if unusual area
+		self.Background.layer2.Background[11].Bg:SetTexture(storyline.Area["Standard"][11])
 	end
 end
 
@@ -2530,25 +2561,32 @@ end
 
 -- play NPCFrame
 function storyline:playNPCAnimation(event,maxTime)
+	storyline.Animation.NPC = - 200 -- delay
 	storyline.NPC.PlayerFrame:SetScript("OnUpdate",function()
-		storyline.NPC.PlayerFrame:SetSequenceTime(event,storyline.Animation.NPC)
+		if storyline.Animation.NPC >= 0 then
+			storyline.NPC.PlayerFrame:SetSequenceTime(event,storyline.Animation.NPC)
+		end
 		storyline.Animation.NPC = storyline.Animation.NPC+(arg1*1000)	
 		if storyline.Animation.NPC > maxTime then storyline.NPC.PlayerFrame:SetScript("OnUpdate", nil); storyline.Animation.NPC = 0 end
 	end)
 end
 
--- play greetings animation
-function storyline:GreetingsAnimation()
-	local emoteNum =  storyline.Animation.Greetings[math.random(getn(storyline.Animation.Greetings))] -- get a random animation
-	if storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()] and storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()][emoteNum] then
-		storyline:playNPCAnimation(emoteNum,storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()][emoteNum])
-	end
+-- from http://stackoverflow.com/questions/2705793/how-to-get-number-of-entries-in-a-lua-table
+function storyline:tablelength(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
 end
 
-function storyline:GreetingsAnimationTest(num)
-	local emoteNum =  num
-	if storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()] and storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()][emoteNum] then
-		storyline:playNPCAnimation(emoteNum,storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()][emoteNum])
+-- play greetings animation
+function storyline:GreetingsAnimation()
+	if storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()] then
+		local randAnimation = math.random(1,storyline:tablelength(storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()]))
+		local counter = 0
+		for key,value in pairs(storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()]) do 
+			counter = counter + 1
+			if counter == randAnimation then storyline:playNPCAnimation(key,storyline.Animation.Database[storyline.NPC.PlayerFrame:GetModel()][key]);break; end
+		end
 	end
 end
 
@@ -2561,7 +2599,6 @@ function storyline:TalkAnimation()
 end
 
 -- chat inputs
-
 local function TextMenu(arg)
 	if arg == nil or arg == "" then
 		DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00Vanilla Storyline:|r This is help topic for |cFFFFFF00 /storyline|r",1,1,1)
@@ -2578,7 +2615,6 @@ local function TextMenu(arg)
 		end
 	end
 end
-
 -- slashcommands
 SlashCmdList['VANILLA_STORYLINE'] = TextMenu
 SLASH_VANILLA_STORYLINE1 = '/storyline'
@@ -2650,7 +2686,7 @@ storyline.Area = {}
 								[4]="Interface\\Glues\\Credits\\BlastedLands4",
 								[5]="Interface\\Glues\\Credits\\BlastedLands5",
 								[6]="Interface\\Glues\\Credits\\BlastedLands6"}
-	storyline.Area["Un'goro Crater"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\UngoroCrater"}
+	storyline.Area["Un'Goro Crater"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\UngoroCrater"}
 	storyline.Area["Felwood"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\Felwood"}	
 	storyline.Area["Burning Steppes"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\BurningSteppes"}	
 	storyline.Area["Western Plaguelands"]={[11]="Interface\\AddOns\\VanillaStoryline\\Assets\\Images\\Locations\\WesternPlaguelands"}	
@@ -2694,4 +2730,3 @@ storyline.Area = {}
 								[9]="",
 								[10]="",
 								[11]=""}
-								
