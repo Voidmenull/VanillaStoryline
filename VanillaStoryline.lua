@@ -2383,6 +2383,7 @@ function storyline:UpdateModels()
 	elseif model == "Character\\Tauren\\Female\\TaurenFemale" then storyline.NPC.PlayerFrame:SetPosition(0,0.6,0.05);storyline.NPC.PlayerFrame:SetModelScale(0.9) -- ok
 	elseif model == "Character\\Troll\\Female\\TrollFemale" then storyline.NPC.PlayerFrame:SetModelScale(0.8) -- ok
 	elseif model == "Character\\Human\\Female\\HumanFemale" then storyline.NPC.PlayerFrame:SetModelScale(0.72) -- ok
+	elseif model == "Character\\Scourge\\Female\\ScourgeFemale" then storyline.NPC.PlayerFrame:SetModelScale(0.8) -- ok
 	
 	-- npc models
 	elseif model == "Creature\\HighElf\\HighElfMale_Hunter" then storyline.NPC.PlayerFrame:SetFacing(-1.5); storyline.NPC.PlayerFrame:SetPosition(-2,2.4,0.7) -- ok
